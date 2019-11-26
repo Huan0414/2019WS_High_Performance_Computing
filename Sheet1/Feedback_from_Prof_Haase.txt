@@ -1,0 +1,104 @@
+	
+###########################################################
+Chen, Huan
+###########################################################
+
+ex1_a:
+make run COMPILER=CLANG_
+
+* Compiler warning! "main.cpp:81:53: warning: loop will run at most once"
+  <-- because of 'break' inside for-loop.              [-1]
+
+* Declare protoptype of function in header file.
+
+Code looks good.
+
+-------------
+ex1_b:
+
+* kein Makefile
+* Prototyping
+* geometric mean is "inf"  WRONG                   [-1]
+  ==> Split the computation into junks of size log(max<T>)/log(abs(x)) and calculate n-th root from these junks; goto next junk; multiply junk results
+ 
+-------------
+ex1_c:
+
+* kein Makefile
+* Prototyping
+* Code correct
+
+-------------
+ex1_d:
+
+* suspecious: no difference between Kahan and normal summation.
+==>  float,  -O1
+
+* no vectors as parameters                 [-1]
+
+-------------
+ex1_e:
+
+* correct
+
+-------------
+ex1_f:
+
+* correct and counting is fast!
+* array sum in count_goldback needs twice as much memory as minimum
+* single_goldbach is to slow           [-0.5]
+
+
+-------------
+ex1_g:
+
+* matrix class
+* non-template: source + header file
+ Tensor product maxtrix missing    [-1]
+
+#####################
+Header/Source files
+Prototyping
+
+
+##### About Matrix Transpose
+@Copyright Haase
+
+vector<double> DenseMatrix::MultT(vector<double> const &u) const
+{
+    assert( GetNrows()==static_cast<int>(u.size()) ); // #rows in matrix =? #elements in vector
+
+    int const nrows = GetNrows();
+    int const mcols = GetNcols();
+
+    vector<double> f(mcols);                 // allocate resulting vector
+                                             // matrix times vector: f := A^T * u
+    for (int i = 0; i < mcols; ++i) {        // i and j loops are swapped in matrix access
+        double tmp = 0.0;
+        for (int j = 0; j < nrows; ++j) {
+            tmp = tmp + _A[j*mcols+i] * u[j];
+        }
+        f[i] = tmp;
+    }
+
+    return f;
+}
+
+// loops j and i are swapped
+vector<double> DenseMatrix::MultT_fast(vector<double> const &u) const
+{
+    assert( GetNrows()==static_cast<int>(u.size()) ); // #rows in matrix =? #elements in vector
+
+    int const nrows = GetNrows();
+    int const mcols = GetNcols();
+
+    vector<double> f(mcols,0.0);             // allocate resulting vector
+                                             // matrix times vector: f := A^T * u
+    for (int j = 0; j < nrows; ++j) {        // i and j loops are swapped in matrix access
+        for (int i = 0; i < mcols; ++i) {
+            f[i] += _A[j*mcols+i] * u[j];
+        }
+    }
+
+    return f;
+}
