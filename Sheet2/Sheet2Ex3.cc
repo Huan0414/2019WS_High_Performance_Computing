@@ -3,130 +3,23 @@
 #include<assert.h>
 #include<ctime>
 #include<cmath>
-#include <cstdlib>
+#include<cstdlib>
+#include "functionsEx3Sheet2.h"
 
 using namespace std;
 
-
-
-// Function Inner Product
-void InnerProduct(vector<double> const &vecOne, vector<double> const &vecTwo, double &product)
-{
-	assert(vecOne.size() == vecTwo.size());
-    product = 0.0;
-    for (int i = 0; (unsigned)i <= vecOne.size()-1; i++){
-      product = product + (vecOne[i])*(vecTwo[i]);
-    }
-    //return product;
-}
-
-// L2 Norm of vector
-void LTwoNorm(vector<double> const &vec, double &product)
-{
-    InnerProduct(vec,vec,product);
-    // product = 0.0;
-    //for (int i = 0; (unsigned)i <= vec.size()-1; i++){
-    //  product = product + (vec[i])*(vec[i]);
-    //}
-    product = sqrt(product);
-    //return product;
-}
-
-// Function Matrix-Vector Multiplication
-void MatrixVectorMultiplication(vector<vector<double>> const &A, vector<double> const &x, vector<double> &product)
-{
-    int const mrows = A.size();         // #matrix rows
-
-    for (int i = 0; i < (unsigned)mrows; ++i) {
-      InnerProduct(A[i],x,product[i]);                    // inner product of row i with vector x
-      //cout<< product[i] << " ";
-    }
-}
-
-// Function TransposeMatrix
-void TransposeMatrix(vector<vector<double>> const &A, vector<vector<double>> &Transpose){
-  int RowsA=A.size(), ColumnsA=A[0].size(), RowsT=Transpose.size(), ColumnsT=Transpose[0].size();
-  assert(RowsA == ColumnsT);                  // Dimension Check
-  assert(ColumnsA == RowsT);            // Dimension Check
-  for(int i=0; i<RowsA; ++i){
-    for(int j=0; j<ColumnsA; ++j){
-      Transpose[j][i] = A[i][j];
-    }
-  }
-}
-
-// Function MatrixMultiplication
-void MatrixMultiplication( vector<vector<double>> const &a,  vector<vector<double>> const &b,
-                          vector<vector<double>> &product) {
-   int rowA=a.size(), columnA=a[0].size(), rowB=b.size(), columnB=b[0].size();
-   assert(columnA == rowB); // Checks if dimensions match
-   vector<vector<double>> TransposeB(columnB,vector<double>(rowB));
-   TransposeMatrix(b,TransposeB);
-   //vector<vector<double>> product(rowA, vector<double>(columnB));
-   for(int i=0; i<rowA; ++i){
-     for(int j=0; j<columnB; ++j){
-       InnerProduct(a[i],TransposeB[j],product[i][j]);
-       //product[i][j] = 0.0;
-       //for(int k=0; k<columnA; ++k){
-       //product[i][j]+=a[i][k]*b[k][j];}
-   }}
-}
-
-// Function MatrixMultiplication Column-wise access
-void MatrixMultiplicationColumnwiseAccess( vector<vector<double>> const &a,
-                                          vector<vector<double>> const &b, vector<vector<double>> &product) {
-   int rowA=a.size(), columnA=a[0].size(), rowB=b.size(), columnB=b[0].size();
-   //vector<vector<double>> product(rowA, vector<double>(columnB));
-   assert(columnA == rowB); // Checks if dimensions match
-   for(int i=0; i<rowA; ++i){
-     for(int j=0; j<columnB; ++j){
-       product[i][j] = 0;
-       for(int k=0; k<columnA; ++k){
-         product[i][j]+=a[i][k]*b[k][j];
-   }}}
-   //return C;
-   //cout<<"The product is:"<<endl;
-   //for(int i=0; i<rowA; ++i) {
-   //  for(int j=0; j<columnB; ++j){
-   //   cout<<product[i][j]<<" ";}
-   //  cout<<endl;}
-}
-
-void PolynomialEvaluation(vector<double> const &a, vector<double> const &x, vector<double> &result){
-    int Xsize = x.size();
-    int Asize = a.size();
-    int Rsize = result.size();
-    assert(Rsize == Xsize);
-
-    for (int j = 0; j<Xsize;j++)
-    {
-        result[j]=0.0;
-        double x_iterative = 1.0;
-        for (int i = 0; i<Asize;i++)
-        {
-            if (i==0) {result[j] += a[i]*x_iterative;}
-            else {x_iterative *= x[j]; result[j] += a[i]*x_iterative;}
-        }
-    }
-
-}
-
-// ############################################### Main
+// Main
 int main()
 {
-   // Chose a value such that the benchmark runs at least 10 sec.
-  double const NLOOPSInnerProd = 200.0; // InnerProduct
-  double const NLOOPSL2 = 200.0; // L2Norm
-  double const NLOOPSMatrixVector = 200.0; // Matrix-Vector
-  double const NLOOPSMatrixMatrix = 1.0; // Matrix-Matrix
-  double const NLOOPSPolynomialEvaluation = 10.0;
-  double const DoubleSize = sizeof(double);
-
+  double const DoubleSize = sizeof(double); // Size of double
   double tstart, t1;  // timer
+  // ###########################################################################################
+  { /* */// Inner Product
+  cout << "------" << endl;
+  double const NLOOPSInnerProd = 200.0; // InnerProduct
 
-  /* *///############################################ Inner Product
   // Test data for InnerProduct
-  {int const VectorSize = 6000000;
+  int const VectorSize = 6000000;
   vector<double> a(VectorSize);
   vector<double> b(VectorSize);
 
@@ -149,23 +42,25 @@ int main()
   //############################################# Print Timing
   t1 = clock() - tstart;
   t1 /= CLOCKS_PER_SEC;   // now, t1 in seconds
+  cout << "InnerProduct "<< endl;
   cout << "Total time in sec: " << t1 << endl;
   t1 /= NLOOPSInnerProd;           // divide by number of function calls
-  cout << endl;
   cout.precision(2);
-  cout << "InnerProduct "<< endl;
-  cout << "Timing in sec. : " << t1 << endl;
+  cout << "N (size of vector): " << VectorSize << endl;
+  cout << "Number of Loops: " << NLOOPSInnerProd << endl;
+  cout << "Timing in sec. per loop: " << t1 << endl;
   cout << "Memory allocated: " << 2.0*VectorSize*DoubleSize/1024/1024/1024 << endl;
   cout << "GFLOPS: " << 2.0*VectorSize/t1/1024/1024/1024 << endl;
   cout << "Gib/sec: "<< 2.0*VectorSize*DoubleSize/t1/1024/1024/1024 << endl;
-  }
-
   //############################################# -------------
+  }
+  // ###########################################################################################
+  { /* */// Matrix-Vector Multiplication
+  double const NLOOPSMatrixVector = 200.0; // Matrix-Vector
 
-  /* */// ############################################ Matrix-Vector Multiplication
   cout << "------" << endl;
   // Test data for Matrix-Vector multiplication.
-  {int const MROW=10000, NCOL=900;           // initialize constants
+  int const MROW=10000, NCOL=900;           // initialize constants
 
   vector<double> x(NCOL);      // initialize u
   vector<vector<double>> A(MROW, vector<double>(NCOL));
@@ -191,21 +86,24 @@ int main()
   // ############################################ Print timing
   t1 = clock() - tstart;
   t1 /= CLOCKS_PER_SEC;     // now, t1 in seconds
+  cout << "Matrix-Vector Multiplication "<< endl;
   cout << "Total time in sec: " << t1 << endl;
   t1 /= NLOOPSMatrixVector; // divide by number of function calls
-  cout << endl;
   cout.precision(2);
-  cout << "Matrix-Vector Multiplication "<< endl;
-  cout << "Timing in sec. : " << t1 << endl;
+  cout << "M times N matrix: " << "M = " << MROW << ", N = " << NCOL << endl;
+  cout << "Number of Loops: " << NLOOPSMatrixVector << endl;
+  cout << "Timing in sec. per loop: : " << t1 << endl;
   cout << "Memory allocated (in GB): " << (MROW*NCOL + MROW + NCOL)*DoubleSize/1024/1024/1024 << endl;
   cout << "GFLOPS: " << 2.0*MROW*NCOL/t1/1024/1024/1024 << endl;
   cout << "Gib/sec: "<< (MROW*NCOL+NCOL+MROW)*DoubleSize/t1/1024/1024/1024 << endl;
-  }
   // ############################################ ----------------------------
-
-  /* */ // ############################################ Matrix-Matrix Multiplication
+  }
+  // ###########################################################################################
+  { /* */ // Matrix-Matrix Multiplication
   cout << "------" << endl;
-  {int const QROW= 1000, BROW = 1000, BCOL= 1000;
+  double const NLOOPSMatrixMatrix = 1.0; // Matrix-Matrix
+
+  int const QROW= 1000, BROW = 1000, BCOL= 1000;
   vector<vector<double>> Q(QROW, vector<double>(BROW));
   //vector<vector<double>> QTranspose(QROW, vector<double>(BROW));
   vector<vector<double>> B(BROW, vector<double>(BCOL));
@@ -240,26 +138,27 @@ int main()
   // ############################################ Print timing
   t1 = clock() - tstart;
   t1 /= CLOCKS_PER_SEC;     // now, t1 in seconds
+  cout << "Matrix-Matrix Multiplication "<< endl;
   cout << "Total time in sec: " << t1 << endl;
   t1 /= NLOOPSMatrixMatrix; // divide by number of function calls
-  cout << endl;
   cout.precision(2);
-  cout << "Matrix-Matrix Multiplication "<< endl;
-  cout << "Timing in sec. : " << t1 << endl;
+  cout << "Matrix Dimensions (M times L and L times N): M = " << QROW << ", L = " << BROW << ", N = " << BCOL << endl;
+  cout << "Number of Loops: " << NLOOPSMatrixMatrix << endl;
+  cout << "Timing in sec. per loop: " << t1 << endl;
   cout << "Memory allocated (in GB): " << (QROW*BROW + 2.0*BROW*BCOL+QROW*BCOL)*DoubleSize/1024/1024/1024 << endl;
   cout << "GFLOPS: " << (2.0*QROW*BROW*BCOL)/t1/1024/1024/1024 << endl;
   cout << "Gib/sec: "<< (QROW*BROW+3.0*BROW*BCOL+QROW*BCOL)*DoubleSize/t1/1024/1024/1024 << endl;
-  }
   // ############################################ ----------------------------
-
-  /* */// ############################################ Polynomial Evaluation
+  }
+  // ###########################################################################################
+  { /* */// Polynomial Evaluation
   cout << "------" << endl;
-  // test data
-  {int polynomialSize = 9000000;
+  double const NLOOPSPolynomialEvaluation = 10.0;
+  int polynomialSize = 9000000;
   int evaluations = 25;
   vector<double> coefficients(polynomialSize);
   vector<double> x(evaluations);
-
+  // test data
   for(int i=0; i<evaluations; i++){
     x[i] = (i)%100 + 1;
   }
@@ -277,23 +176,70 @@ int main()
   // ############################################ Print timing
   t1 = clock() - tstart;
   t1 /= CLOCKS_PER_SEC;     // now, t1 in seconds
+  cout << "Polynomial Evaluation "<< endl;
   cout << "Total time in sec: " << t1 << endl;
   t1 /= NLOOPSPolynomialEvaluation; // divide by number of function calls
-  cout << endl;
   cout.precision(2);
-  cout << "Polynomial Evaluation "<< endl;
-  cout << "Timing in sec. : " << t1 << endl;
+  cout << "Size of vector x: " << evaluations << endl;
+  cout << "Polynomial size (N) : " << polynomialSize << endl;
+  cout << "Number of Loops: " << NLOOPSPolynomialEvaluation << endl;
+  cout << "Timing in sec. per loop: " << t1 << endl;
   cout << "Memory allocated (in GB): " << (2.0*evaluations+polynomialSize)*DoubleSize/1024/1024/1024 << endl;
   cout << "GFLOPS: " << (3.0*polynomialSize*evaluations)/t1/1024/1024/1024 << endl;
   cout << "Gib/sec: "<< evaluations*(evaluations+3.0*polynomialSize)*DoubleSize/t1/1024/1024/1024 << endl;
+  // ############################################ ----------------------------
+  }
+  // ###########################################################################################
+  { /* */// L2 Norm
+  // ###########################################################################################
+  {  /* */// Kahan Summation vs Normal Summation
+  cout << "------" << endl;
+  int const NLOOPS = 50;        // chose a value such that the benchmark runs at least 10 sec.
+  long long int N = 40000000;
+  vector<double> a(N);
+
+  // vector initialiation
+  for (int i=1;i<=N;i++)
+  {
+    a[i] = (1.0/i)*(1.0/i);
   }
 
-  // ############################################ ----------------------------
+  double tstart, t1;  // timer
 
-  /* *///############################################ L2 Norm
+  // Do calculation
+  tstart = clock();       // start timer
+
+  for (int i=0;i<NLOOPS;i++)
+  {
+	Kahan_scalar(a,N);
+  }
+  t1 = clock() - tstart;
+
+  //##########################################################################
+  // Timings  and Performance
+  t1 /= CLOCKS_PER_SEC;     // now, t1 in seconds
+  cout << "Kahan Summation" << endl;
+  cout.precision(6);
+  cout << "Total time in sec: " << t1 << endl;
+  t1 /= NLOOPS; // divide by number of function calls
+  cout.precision(6);
+  cout << "Timing in sec. : " << t1 << endl;
+  cout << "Sum size: " << N << endl;
+  cout << "Loops: " << NLOOPS << endl;
+  cout << "Memory allocated (in GB): " << 2.0*N*sizeof(double)/1024/1024/1024 << endl;
+  cout << "GFLOPS: " << 4.0*N/t1/1024/1024/1024 << endl;
+  cout << "Gib/sec: "<< 12.0*N*sizeof(double)/t1/1024/1024/1024 << endl;
+  //----------------------------------------------------------------------------
+  cout << "Normal summation result is:" << scalar(a,N)<< endl;
+  cout << "Kahan summation result is:"  << Kahan_scalar(a,N)<< endl;
+  cout << "The difference: KahanSum - NormalSum = " << Kahan_scalar(a,N) - scalar(a,N)<<endl;
+  cout << "The difference: pi^2/6 - NormalSum = " << pow(M_PI,2.0)/6.0 - scalar(a,N)<< endl;
+  cout << "The difference: pi^2/6 - KahanSum = " << pow(M_PI,2.0)/6.0 - Kahan_scalar(a,N)<<endl;}
   cout << "------" << endl;
+  double const NLOOPSL2 = 200.0; // L2Norm
+
   // Test data for L2Norm
-  {int const VectorSize = 9000000;
+  int const VectorSize = 9000000;
   vector<double> a(VectorSize);
 
   double Norm;
@@ -309,18 +255,72 @@ int main()
   //############################################# Print Timing
   t1 = clock() - tstart;
   t1 /= CLOCKS_PER_SEC;   // now, t1 in seconds
+  cout << "L2 Norm "<< endl;
   cout << "Total time in sec: " << t1 << endl;
   t1 /= NLOOPSL2;           // divide by number of function calls
-  cout << endl;
   cout.precision(2);
-  cout << "L2 Norm "<< endl;
-  cout << "Timing in sec. : " << t1 << endl;
+  cout << "Vector Size (N): " << VectorSize << endl;
+  cout << "Number of Loops: " << NLOOPSL2 << endl;
+  cout << "Timing in sec. per loop: " << t1 << endl;
   cout << "Memory allocated: " << VectorSize*DoubleSize/1024/1024/1024 << endl;
   cout << "GFLOPS: " << 2.0*VectorSize/t1/1024/1024/1024 << endl;
-  cout << "Gib/sec: "<< 2.0*VectorSize*DoubleSize/t1/1024/1024/1024 << endl;}
+  cout << "Gib/sec: "<< 2.0*VectorSize*DoubleSize/t1/1024/1024/1024 << endl;
+   //############################################# -------------
+   }
+  // ###########################################################################################
+  { /* */// MatrixMultiplicationTranspose
+  // ###########################################################################################
+  cout << "------" << endl;
+  double const NLOOPSMatrixMatrixTranspose = 1.0; // Matrix-Matrix
 
-  //############################################# -------------
+  int const QROW= 1000, BROW = 1000, BCOL= 1000;
+  vector<vector<double>> Q(QROW, vector<double>(BROW));
+  //vector<vector<double>> QTranspose(QROW, vector<double>(BROW));
+  vector<vector<double>> B(BROW, vector<double>(BCOL));
 
 
+  for (int i=0;i<QROW;i++) // initialization of Q
+  {
+    for (int j=0;j<BROW;j++)
+      {
+        Q[i][j] = (i+j)%219 + 1;
+      }
+  }
+  for (int i=0;i<BROW;i++) // Initialization of B
+  {
+    for (int j=0;j<BCOL;j++)
+      {
+        B[i][j] = (i+j)%219 + 1;
+      }
+  }
+
+  //TransposeMatrix(Q,QTranspose);
+
+  // ############################################ Calculation
+  vector<vector<double>> product(QROW, vector<double>(BCOL));
+  tstart = clock(); // start timer
+
+  // Do Calculation
+  for (int i = 0; i < NLOOPSMatrixMatrixTranspose; ++i){
+    MatrixMultiplicationTranspose(Q,B,product);
+  }
+  // End Calculation
+  // ############################################ Print timing
+  t1 = clock() - tstart;
+  t1 /= CLOCKS_PER_SEC;     // now, t1 in seconds
+  cout << "Matrix-Matrix Multiplication Optimized with transposition "<< endl;
+  cout << "Total time in sec: " << t1 << endl;
+  t1 /= NLOOPSMatrixMatrixTranspose; // divide by number of function calls
+  cout.precision(2);
+  cout << "Matrix Dimensions (M times L and L times N): M = " << QROW << ", L = " << BROW << ", N = " << BCOL << endl;
+  cout << "Number of Loops: " << NLOOPSMatrixMatrixTranspose << endl;
+  cout << "Timing in sec. per loop: " << t1 << endl;
+  cout << "Memory allocated (in GB): " << (QROW*BROW + 2.0*BROW*BCOL+QROW*BCOL)*DoubleSize/1024/1024/1024 << endl;
+  cout << "GFLOPS: " << (2.0*QROW*BROW*BCOL)/t1/1024/1024/1024 << endl;
+  cout << "Gib/sec: "<< (QROW*BROW+3.0*BROW*BCOL+QROW*BCOL)*DoubleSize/t1/1024/1024/1024 << endl;
+  // ############################################ ----------------------------
+  }
   return 0;
 }
+
+
