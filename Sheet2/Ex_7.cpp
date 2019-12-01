@@ -24,7 +24,7 @@ int main(){
 	   if(countn==2) {n = 2000; cout << "########  When n is 2000  ######"<< endl;}
 	    LDA = n;
         LDB = n;
-        nrhs = 50;
+        nrhs = 0;
 		
 		for (int countnr = 0;countnr < 9 ;countnr++)	
 		{			
@@ -84,3 +84,4 @@ int main(){
 				
 	return 0;
 }
+
