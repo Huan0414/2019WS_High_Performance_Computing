@@ -1,0 +1,2 @@
+\form#0:$v_k^{tID}=tID+k$
+\form#1:$v_k= \sum_{tID=0}^{numThreads} v_k^{tID}$

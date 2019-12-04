@@ -1,0 +1,52 @@
+# depslib dependency file v1.0
+1322742789 source:/home/ghaase/Lectures/Kurs-C/SS12/file_io/main.cpp
+	<iostream>
+	<vector>
+	<string>
+	"file_io.h"
+
+1322742789 "
+
+1322742789 /home/ghaase/Lectures/Kurs-C/SS12/file_io/file_io.h
+	<string>
+	<vector>
+
+1322742789 
+
+1322742789 source:/home/ghaase/Lectures/Kurs-C/SS12/file_io/file_io.cpp
+	<iostream>
+	<string>
+	<fstream>
+	<cassert>
+	<vector>
+	<stdexcept>
+
+1322746388 >
+
+1322746388 source:e:\lectures\kurs-c\vor_12\file_io\file_io.cpp
+	<iostream>
+	<string>
+	<fstream>
+	<cassert>
+	<vector>
+	<stdexcept>
+
+1396594835 source:/home/ghaase/Lectures/Kurs-C/V_14/file_io/file_io.cpp
+	<iostream>
+	<string>
+	<fstream>
+	<cassert>
+	<vector>
+	<stdexcept>
+	"file_io.h"
+
+1396594627 /home/ghaase/Lectures/Kurs-C/V_14/file_io/file_io.h
+	<string>
+	<vector>
+
+1396594674 source:/home/ghaase/Lectures/Kurs-C/V_14/file_io/main.cpp
+	<iostream>
+	<vector>
+	<string>
+	"file_io.h"
+

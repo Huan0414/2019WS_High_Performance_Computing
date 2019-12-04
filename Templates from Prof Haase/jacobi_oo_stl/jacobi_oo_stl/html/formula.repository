@@ -1,0 +1,3 @@
+\form#0:$ x^2 \sin(2.5\pi y)$
+\form#1:$\langle x,y \rangle$
+\form#2:$ |x_k-y_k| < \varepsilon \left({1+0.5(|x_k|+|y_k|)}\right) $
