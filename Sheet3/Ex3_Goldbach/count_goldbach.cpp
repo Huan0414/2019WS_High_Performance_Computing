@@ -14,7 +14,7 @@ void count_goldbach(const int n, vector<int> &pair_cont, vector<int> const &prim
 	pair_cont[0] = 1; // 4 has an pair (2+2)
 	int sum = 0;
 	
-	//#pragma omp parallel for default(none) shared(primes,primeN,n) private(sum) reduction(VecAdd:pair_cont) schedule(static)	
+	#pragma omp parallel for default(none) shared(primes,primeN,n) private(sum) reduction(VecAdd:pair_cont) schedule(static)	
     for (int i=1; i< primeN; ++i)
     {		
 			for (int j=i; j < primeN; ++j)

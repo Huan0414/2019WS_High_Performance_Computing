@@ -12,11 +12,37 @@
 */
 double scalar(std::vector<double> const &x, std::vector<double> const &y);
 
+
+//#########################################################################
+// Defined by us
+/** 	Inner product parallized without for loop
+	@param[in] x	vector
+	@param[in] y	vector
+	@return 	    resulting Euclidian inner product <x,y>
+*/
 double scalarNofor(std::vector<double> const &x, std::vector<double> const &y);
 
+/** 	Create vectors with iota and append them orderly
+	@param[in] n	the length of each vector
+	@return 	    resulting a large appended vector
+*/
 std::vector<int> reduction_vec_append_manually(int n);
 
+/** 	Create vectors with iota and append them non-orderly
+	@param[in] n	the length of each vector
+	@return 	    resulting a large ordered appended vector
+*/
 std::vector<int> reduction_vec_append(int n);
+
+/** 	 Append vector omp_in to omp_out .
+	@param[in] omp_in	vector
+	@param[in] omp_out	vector
+	@return 	     vector with all omp_in appended 
+*/
+#pragma omp declare reduction(OurAppend : std::vector<int> : omp_out.insert(omp_out.end(), omp_in.begin(), omp_in.end())) initializer (omp_priv(omp_orig))
+//#########################################################################
+
+
 
 /** 	 Vector @p b adds its elements to vector @p a .
 	@param[in] a	vector

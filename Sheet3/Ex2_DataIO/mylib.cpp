@@ -10,13 +10,16 @@ vector<double> cal_min_max_mean(vector<double> const &a)
 {
  //Initialization
     size_t const N = a.size();
-	vector<double> b(6);
-    b[0] = a[0];
-    b[1] = a[0];
-    b[2] = 0.0;
+	vector<double> b(6,0.0);
+    b[0] = 1.0;
     b[3] = 1.0;
-    b[4] = 0.0;
-    b[5] = 0.0;
+    
+    //b[0] = a[0];
+    //b[1] = a[0];
+    //b[2] = 0.0;
+    //b[3] = 1.0;
+    //b[4] = 0.0;
+    //b[5] = 0.0;
     //double dAritSum = 0.0;
     //double dGeoSum = 1.0;
     //double dHarSum = 0.0;
@@ -28,12 +31,11 @@ vector<double> cal_min_max_mean(vector<double> const &a)
     //b.at(1) = *max_element(a.begin(),a.end()); //maximum
 
 // Calculate 'sum' value
-	#pragma omp parallel for default(none) shared(a,N) reduction(ReductionForMeansCalculation:b)
-    
+	#pragma omp parallel for default(none) shared(a,N) reduction(OurReduction:b)
     for (size_t i = 0; i < N; ++i)
     {
         if(b[0] > a[i]){b[0] = a[i];}
-        if(b[1] <a[i]){b[1] = a[i];}
+        if(b[1] < a[i]){b[1] = a[i];}
         b[2] += a[i];
         b[3] *= pow(a[i], 1.0/N); 
         b[4] += 1.0/a[i];
@@ -45,8 +47,8 @@ vector<double> cal_min_max_mean(vector<double> const &a)
     }
 	
 	// Calculate Mean Values
-    b[2] /= N; 			 //arithmetic mean
-    //b[3] = dGeoSum;				 //geometric mean
+    b[2] /= N; 			     //arithmetic mean
+    //b[3] = dGeoSum;		 //geometric mean
     b[4]  = N/b[4];			 //harmonic mean
 // Calculate standard deviation
 	b[5] = b[5] - N*b[2]*b[2];

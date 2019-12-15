@@ -40,7 +40,7 @@ int main()
 	tstart = omp_get_wtime();
 	read_vector_from_file(name, datavec);	 // read vector from file
 	t1 = omp_get_wtime() - tstart;
-	cout << "The time needed for linear read to vector is : " << t1 << endl;
+	cout << "Time needed for reading data from file.txt is : " << t1 << endl;
 	
 	tstart = omp_get_wtime(); // timer beginning
 	for(int i=0; i< NLOOPS; i++)
@@ -53,6 +53,7 @@ int main()
     t1 = omp_get_wtime() - tstart;
     //t1 /= CLOCKS_PER_SEC;	// t1 in seconds
 	t2 = t1/NLOOPS;			// Time for each loop
+
 //####################################################################    
 // Performance evaluation
     cout << endl;

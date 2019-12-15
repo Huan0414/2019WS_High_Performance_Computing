@@ -13,8 +13,8 @@ int main(int argc, char const *argv[])
 {
 	cout << "Number of available processors: " << omp_get_num_procs() << endl;
 	cout << "The return of command 'omp_in_parallel': " << omp_in_parallel << endl;
-    int const NLOOPS = 50;        // chose a value such that the benchmark runs at least 10 sec.
-    unsigned int N = 500001;
+    int const NLOOPS = 200;        // chose a value such that the benchmark runs at least 10 sec.
+    unsigned int N = 40000000;
 //##########################################################################
 //   Read Parameter from command line  (C++ style)
     cout << "Checking command line parameters for: -n <number> " << endl;
@@ -35,24 +35,24 @@ int main(int argc, char const *argv[])
     cout << "\nN = " << N << endl;
     
     check_env(argc, argv);
-//########################################################################
-    int nthreads;                                  // OpenMP
-    //omp_set_num_threads(15);
-    #pragma omp parallel default(none) shared(cout,nthreads)
-    {
-        int const th_id  = omp_get_thread_num();   // OpenMP
-        int const nthrds = omp_get_num_threads();  // OpenMP
+////########################################################################
+    //int nthreads;                                  // OpenMP
+    //omp_set_num_threads(10);
+    //#pragma omp parallel default(none) shared(cout,nthreads)
+    //{
+        //int const th_id  = omp_get_thread_num();   // OpenMP
+        //int const nthrds = omp_get_num_threads();  // OpenMP
         
-        stringstream ss;
-        ss << "C++: Hello World from thread " << th_id << " / " << nthrds << endl;
-        #pragma omp critical
-        {
-            cout << ss.str();                      // output to a shared ressource
-        }
-        #pragma omp master
-        nthreads = nthrds;                         // transfer nn to to master thread
-    }
-    cout << "   " << nthreads << "   threads have been started." << endl;
+        //stringstream ss;
+        //ss << "C++: Hello World from thread " << th_id << " / " << nthrds << endl;
+        //#pragma omp critical
+        //{
+            //cout << ss.str();                      // output to a shared ressource
+        //}
+        //#pragma omp master
+        //nthreads = nthrds;                         // transfer nn to to master thread
+    //}
+    //cout << "   " << nthreads << "   threads have been started." << endl;
 
 //##########################################################################
 //  Memory allocation
@@ -84,13 +84,13 @@ int main(int argc, char const *argv[])
     double sk(0.0);
     for (int i = 0; i < NLOOPS; ++i)
     {
-//        sk = scalar(x, y);
-        sk = scalarNofor(x,y);
+        sk = scalar(x, y);
+//        sk = scalarNofor(x,y);
 //      sk = norm(x);
     }
 
     double t1 = omp_get_wtime() - tstart;             // OpenMP
-    t1 /= NLOOPS;           // divide by number of function calls
+    double t2 = t1/NLOOPS;           // divide by number of function calls
 
 //##########################################################################
 // Check the correct result
@@ -105,23 +105,24 @@ int main(int argc, char const *argv[])
 // Timings  and Performance
     cout << endl;
     cout.precision(2);
-    cout << "Timing in sec. : " << t1 << endl;
-    cout << "GFLOPS         : " << 2.0 * N / t1 / 1024 / 1024 / 1024 << endl;
-    cout << "GiByte/s        : " << 2.0 * N / t1 / 1024 / 1024 / 1024 * sizeof(x[0]) << endl;
+    cout << "Total time in sec.	:" << t1 << endl;
+    cout << "Time/loop in sec.	: " << t2 << endl;
+    cout << "GFLOPS		: " << 2.0 * N / t2 / 1024 / 1024 / 1024 << endl;
+    cout << "GiByte/s	: " << 2.0 * N / t2 / 1024 / 1024 / 1024 * sizeof(x[0]) << endl;
 
 //#########################################################################
 
     cout << "\n  Try the reduction with an STL-vektor \n";
     
-    auto vr = reduction_vec(5);
+    auto vr = reduction_vec(100);
     cout << "done\n";
-    cout << vr << endl;
+    //cout << vr << endl;
     
     auto vra1 = reduction_vec_append(3);
-    cout << "Reduction appending result is: " << vra1 << endl;
+    cout << "Appending result is: " << vra1 << endl;
     
     auto vra2 = reduction_vec_append_manually(3);
-    cout << "Manual appending result is: " << vra2 << endl;
+    cout << "Manually ordered appending result is: " << vra2 << endl;
     
     //vector<int> vr1(3);
     //vr1 = {1,2,3};

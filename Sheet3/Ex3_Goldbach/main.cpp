@@ -61,6 +61,7 @@ int main()
     cout.precision(4);
     cout << "Total time	:" << t1 << endl;
     //cout << "Time per loop	:" << t2 << endl;
-	
+	//cout << "GFLOPS		:" << (4.0*N + 2) / t2 / 1024 / 1024 / 1024 << endl;
+    //cout << "GiByte/s	:" <<  (N + 6) / t1 / 1024 / 1024 / 1024 * sizeof(double) << endl;
     return 0;
 }

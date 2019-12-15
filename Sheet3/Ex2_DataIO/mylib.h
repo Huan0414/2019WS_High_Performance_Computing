@@ -12,6 +12,11 @@
 //void cal_min_max_mean(std::vector<double> const &a, std::vector<double> &b);
 std::vector<double> cal_min_max_mean(std::vector<double> const &a);
 
+/**	 Declare reduction: OurReduction
+	@param[in] a vector
+	@param[in] b vector
+	@retun 		resulting reducted b(6)
+*/
 template<class T>
 std::vector<T> &operator+=(std::vector<T> &a, std::vector<T> const &b) 
 	{
@@ -24,7 +29,6 @@ std::vector<T> &operator+=(std::vector<T> &a, std::vector<T> const &b)
 	a[5] += b[5];
 	return a;
 	}
-
-#pragma omp declare reduction (ReductionForMeansCalculation : std::vector<double> : omp_out += omp_in) initializer (omp_priv(omp_orig))
+#pragma omp declare reduction (OurReduction : std::vector<double> : omp_out += omp_in) initializer (omp_priv(omp_orig))
 
 #endif
