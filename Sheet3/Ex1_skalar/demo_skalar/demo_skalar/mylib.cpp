@@ -13,7 +13,7 @@ double scalar(vector<double> const &x, vector<double> const &y)
     assert(x.size() == y.size()); // switch off via compile flag: -DNDEBUG
     size_t const N = x.size();
     double sum = 0.0;
-#pragma omp parallel for default(none) shared(x,y,N) reduction(+:sum)
+	#pragma omp parallel for default(none) shared(x,y,N) reduction(+:sum)
     for (size_t i = 0; i < N; ++i)
     {
         sum += x[i] * y[i];
@@ -63,8 +63,8 @@ vector<int> reduction_vec_append(int n)
 { 
     vector<int> vec;
     
-#pragma omp declare reduction (OurAppend : vector<int> : omp_out.insert(omp_out.end(), omp_in.begin(), omp_in.end()))
-#pragma omp parallel default(none) shared(cout, n) reduction(OurAppend:vec)
+	#pragma omp declare reduction (OurAppend : vector<int> : omp_out.insert(omp_out.end(), omp_in.begin(), omp_in.end()))
+	#pragma omp parallel default(none) shared(cout, n) reduction(OurAppend:vec)
     {
 		vec.resize(n);
         int threadNumber = omp_get_thread_num();

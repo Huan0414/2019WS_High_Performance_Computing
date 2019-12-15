@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <ctime>
+#include <omp.h>
 using namespace std;
 
 #include "file_io.h"
@@ -16,26 +17,41 @@ int main()
     cout << "File einlesen." << endl;
     const string name("data_1.txt");        // name of input file
     const string name2("out_1.txt");        // name of output file
-	int NLOOPS = 20000;
+	int NLOOPS = 20;
+
     
 //####################################################################    
 // read, calculate and write
 	double tstart, t1, t2;  // timer
-	tstart = clock();
 	
-	vector<double> a;
+	//vector<double> a;
+	vector<double> datavec;
     vector<double> b(6);
-    size_t const N = a.size();
+    //size_t const N = a.size();
+    size_t const N = datavec.size();
 	
+	// Decomment these three lines to create a new file of size a.size()
+	//vector<double> a(200000000);
+	//for(size_t i = 0; i< a.size(); ++i){a[i] = rand()%1000 + 1;}
+	//write_vector_to_file(name, a);
+	
+	cout<< "inizialization finished" << endl;
+	cout<< "Read to vec begins" << endl;
+	tstart = omp_get_wtime();
+	read_vector_from_file(name, datavec);	 // read vector from file
+	t1 = omp_get_wtime() - tstart;
+	cout << "The time needed for linear read to vector is : " << t1 << endl;
+	
+	tstart = omp_get_wtime(); // timer beginning
 	for(int i=0; i< NLOOPS; i++)
-	{
-    read_vector_from_file(name, a);	 // read vector from file	
-    cal_min_max_mean(a, b);			 // get min,max and mean values    		
+	{	
+    //cal_min_max_mean(a,b);			 // get min,max and mean values 
+    b = cal_min_max_mean(datavec);			 // get min,max and mean values    	   		
     write_vector_to_file(name2, b);	 // get min,max and mean values
 	}
 	
-    t1 = clock() - tstart;
-    t1 /= CLOCKS_PER_SEC;	// t1 in seconds
+    t1 = omp_get_wtime() - tstart;
+    //t1 /= CLOCKS_PER_SEC;	// t1 in seconds
 	t2 = t1/NLOOPS;			// Time for each loop
 //####################################################################    
 // Performance evaluation

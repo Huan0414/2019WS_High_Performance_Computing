@@ -4,6 +4,8 @@
 #include <cassert>
 #include <vector>
 #include <stdexcept>
+#include <algorithm>
+#include <omp.h>
 using namespace std;
 
 #include "file_io.h"
@@ -12,7 +14,12 @@ using namespace std;
 void fill_vector(istream& istr, vector<double>& v)
 {
     double d=0;
-    while ( istr >> d) v.push_back(d); // Einlesen
+        
+    //#pragma omp declare reduction (OurAppend : vector<double> : omp_out.insert(omp_out.end(), omp_in.begin(), omp_in.end())) initializer (omp_priv(omp_orig))
+    //#pragma omp parallel shared(istr) reduction(OurAppend:v)
+    //{
+		while ( istr >> d) v.push_back(d); // Einlesen
+	//}
     if (!istr.eof())
     { // Fehlerbehandlung
         cout << " Error handling \n";
@@ -24,6 +31,7 @@ void fill_vector(istream& istr, vector<double>& v)
         }
     }
     v.shrink_to_fit();                 // C++11
+        
     return;
 }
 
@@ -43,6 +51,7 @@ void read_vector_from_file(const string& file_name, vector<double>& v)
 
  return;
 }
+
 
 void write_vector_to_file(const string& file_name, const vector<double>& v)
 {

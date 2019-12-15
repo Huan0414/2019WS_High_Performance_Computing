@@ -1,22 +1,29 @@
+#include "mylib.h"
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 #include <vector>
+
 using namespace std;
 
-#include <mayer_primes.h>
-
-void count_goldback(const int n, vector<int> &pair_cont)
+void count_goldbach(const int n, vector<int> &pair_cont, vector<int> const &primes)
 {
-    auto primes = get_primes(n); // get all the primes until n
+    
     int primeN = primes.size();
-
-	int k; 
+    //cout << "primeN: " << primeN << endl;
 	pair_cont[0] = 1; // 4 has an pair (2+2)
-    for (int i=1; i< primeN ; ++i)
+	int sum = 0;
+	
+	//#pragma omp parallel for default(none) shared(primes,primeN,n) private(sum) reduction(VecAdd:pair_cont) schedule(static)	
+    for (int i=1; i< primeN; ++i)
     {		
-			for (int j=i; j < primeN; j++)
+			for (int j=i; j < primeN; ++j)
 			{
-				int sum = primes[i] + primes[j];
-				if (sum>=4 && sum<=n) {pair_cont[sum/2-2] += 1;}
+				sum = primes[i] + primes[j];
+				if(sum > n){break;}
+				else {pair_cont[sum/2-2] += 1;}
 			}
     }
+
 
 }
