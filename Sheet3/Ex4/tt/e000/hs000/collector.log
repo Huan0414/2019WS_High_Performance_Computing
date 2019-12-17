@@ -1,0 +1,32 @@
+Collection status has changed. 1
+Warning: Can't find 32-bit pin tool. 32-bit processes will not be profiled.
+Collection has been started.
+Collection has stopped. Application exit code:  0
+Finalizing results
+Finalizing the result
+Clearing the database
+The database has been cleared, elapsed time is 0.317 seconds.
+Loading raw data to the database
+Loading 'systemcollector-1571954-math047068.sc' file
+Loading '1571954-1571967.0.trace' file
+Updating precomputed scalar metrics
+Raw data has been loaded to the database, elapsed time is 27.060 seconds.
+Processing profile metrics and debug information
+Data transformations have been finished, elapsed time is 0.000 seconds.
+Setting data model parameters
+Resolving module symbols
+Resolving information for dangling locations
+Resolving information for `ld-linux-x86-64.so.2'
+Resolving information for `a.out'
+Resolving information for `libittnotify.so'
+Resolving information for `libc.so.6'
+Warning: Cannot locate debugging information for file `/lib64/ld-linux-x86-64.so.2'.
+Warning: Cannot locate debugging information for file `/opt/intel/advisor_2019.5.0.602216/lib64/runtime/libittnotify.so'.
+Warning: Cannot locate debugging information for file `/home/huanc/Documents/Master-HPC/2019WS_High_Performance_Computing/Sheet3/Ex4/a.out'.
+Resolving information for `libiomp5.so'
+Resolving information for `libpthread.so.0'
+Warning: Cannot locate debugging information for file `/usr/lib/libc.so.6'.
+Warning: Cannot locate debugging information for file `/usr/lib/libpthread.so.0'.
+Warning: Cannot locate debugging information for file `/opt/intel/lib/libiomp5.so'.
+Cannot match the module with the symbol file `/opt/intel/lib/libiomp5.dbg'. Make sure to specify the correct path to the symbol file in the Binary/Symbol Search list of directories.
+Resolving information for `libstdc++.so.6'

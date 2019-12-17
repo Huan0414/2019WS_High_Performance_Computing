@@ -11,11 +11,10 @@ vector<double> cal_min_max_mean(vector<double> const &a)
  //Initialization
     size_t const N = a.size();
 	vector<double> b(6,0.0);
-    b[0] = 1.0;
+    b[0] = a[0];
+    b[1] = a[0];
     b[3] = 1.0;
-    
-    //b[0] = a[0];
-    //b[1] = a[0];
+    assert((a.size() > 0) && (b.size() > 0));
     //b[2] = 0.0;
     //b[3] = 1.0;
     //b[4] = 0.0;

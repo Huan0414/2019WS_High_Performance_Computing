@@ -47,7 +47,7 @@ int main()
 	{	
     //cal_min_max_mean(a,b);			 // get min,max and mean values 
     b = cal_min_max_mean(datavec);			 // get min,max and mean values    	   		
-    write_vector_to_file(name2, b);	 // get min,max and mean values
+    //write_vector_to_file(name2, b);	 // get min,max and mean values
 	}
 	
     t1 = omp_get_wtime() - tstart;

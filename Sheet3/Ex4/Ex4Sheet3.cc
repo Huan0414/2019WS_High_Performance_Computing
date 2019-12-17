@@ -11,11 +11,15 @@
 
 using namespace std;
 
+// g++ -Ofast -fopenmp Ex4Sheet3.cc && ./a.out
+
+inline
 double InnerProduct(vector<double> const &x, vector<double> const &y, double &sum)
 {
     assert(x.size() == y.size()); // switch off via compile flag: -DNDEBUG
     size_t const N = x.size();
-    //double sum = 0.0;
+    //double 
+    sum = 0.0;
     //#pragma omp parallel for default(none) shared(x,y,N) reduction(+:sum)
     for (size_t i = 0; i < N; ++i)
     {
@@ -73,7 +77,7 @@ void CheckEquality(std::vector<std::vector<double>> const &A, std::vector<std::v
   assert(ColumnsA == RowsB);            // Dimension Check
   for(int i=0; i<RowsA; ++i){
     for(int j=0; j<ColumnsA; ++j){
-      assert(B[j][i] == A[i][j]); }}
+      assert(fabs(B[j][i]- A[i][j]) < 1e-3 ); }}
 }
 
 void MatrixMultiplicationParallel( std::vector<std::vector<double>> const &a,  std::vector<std::vector<double>> const &b,
@@ -114,15 +118,46 @@ void PolynomialEvaluation(std::vector<double> const &a, std::vector<double> cons
 }
 
 int main(){
+
+  const int MaxNumberOfThreads = 20;
+  //const int InitialNumberOfThreads = 13;
+  
+  double EfficiencyBenchmarkMatrixVector;
+  double EfficiencyBenchmarkMatrixMatrix;
+  double EfficiencyBenchmarkPolynomialEvaluation;
+  
+  // Vector of Times (total running time)
+  vector<double> TimesMatrixVector(MaxNumberOfThreads);
+  vector<double> TimesMatrixMatrix(MaxNumberOfThreads);
+  vector<double> TimesPolynomialEvaluation(MaxNumberOfThreads); 
+  
+  // Vector of Times (total running time)
+  vector<double> EfficiencyMatrixVector(MaxNumberOfThreads);
+  vector<double> EfficiencyMatrixMatrix(MaxNumberOfThreads);
+  vector<double> EfficiencyPolynomialEvaluation(MaxNumberOfThreads);
+  
+  // Vectors of GFlops
+  vector<double> GFlopsMatrixVector(MaxNumberOfThreads);
+  vector<double> GFlopsMatrixMatrix(MaxNumberOfThreads);
+  vector<double> GFlopsPolynomialEvaluation(MaxNumberOfThreads);
+
+  // Vectors of Gib/sec
+  vector<double> GibPerSecMatrixVector(MaxNumberOfThreads);
+  vector<double> GibPerSecMatrixMatrix(MaxNumberOfThreads);
+  vector<double> GibPerSecPolynomialEvaluation(MaxNumberOfThreads);
+  
+  
+  for(int ThreadsUsed= 1; ThreadsUsed<=MaxNumberOfThreads; ++ThreadsUsed){                 // for loop for no. of threads 
+  omp_set_num_threads(ThreadsUsed);
   double const DoubleSize = sizeof(double); // Size of double
   double tstart, t1;  // timer
 
   { /* */// Matrix-Vector Multiplication
   double const NLOOPSMatrixVector = 150.0; // Matrix-Vector
 
-  cout << "------" << endl;
+  if(ThreadsUsed == 1){cout << "------" << endl;}
   // Test data for Matrix-Vector multiplication.
-  int const MROW= 6000, NCOL= 9000;           // initialize constants
+  int const MROW= 60000, NCOL= 9000;           // initialize constants
 
   vector<double> x(NCOL);      // initialize u
   vector<vector<double>> A(MROW, vector<double>(NCOL));
@@ -147,24 +182,31 @@ int main(){
   // End Calculation
   // ############################################ Print timing
   t1 = omp_get_wtime() - tstart;
-  cout << "Value to use variable z: " << z[rand() % z.size()]<< endl;
+  TimesMatrixVector[ThreadsUsed - 1] = t1;
+  if(ThreadsUsed == 1){  // Setting up efficiency vector
+	  EfficiencyBenchmarkMatrixVector = t1;
+	  EfficiencyMatrixVector[ThreadsUsed - 1] = 1.0;}
+	  else{EfficiencyMatrixVector[ThreadsUsed - 1] = EfficiencyBenchmarkMatrixVector/(ThreadsUsed*t1);}
+  //cout << "Value to use variable z: " << z[rand() % z.size()]<< endl;
   //t1 /= CLOCKS_PER_SEC;     // now, t1 in seconds
-  cout << "Matrix-Vector Multiplication "<< endl;
-  cout << "Total time in sec: " << t1 << endl;
-  t1 /= NLOOPSMatrixVector; // divide by number of function calls
+  if(ThreadsUsed == 1){ cout << "Matrix-Vector Multiplication "<< endl;}
+  //cout << "Total time in sec: " << t1 << endl;
+  //t1 /= NLOOPSMatrixVector; // divide by number of function calls
   cout.precision(2);
-  cout << "M times N matrix: " << "M = " << MROW << ", N = " << NCOL << endl;
-  cout << "Number of Loops: " << NLOOPSMatrixVector << endl;
-  cout << "Number of Threads" << "..." << endl;
-  cout << "Timing in sec. per loop: : " << t1 << endl;
-  cout << "Memory allocated (in GB): " << (MROW*NCOL + MROW + NCOL)*DoubleSize/1024/1024/1024 << endl;
-  cout << "GFLOPS: " << 2.0*MROW*NCOL/t1/1024/1024/1024 << endl;
-  cout << "Gib/sec: "<< (4.0*MROW*NCOL+MROW)*DoubleSize/t1/1024/1024/1024 << endl;
+  if(ThreadsUsed == 1){cout << "M times N matrix: " << "M = " << MROW << ", N = " << NCOL << endl;
+  cout << "Number of Loops: " << NLOOPSMatrixVector << endl;}
+  //cout << "Number of Threads" << "..." << endl;
+  //cout << "Timing in sec. per loop: : " << t1 << endl;
+  //cout << "Memory allocated (in GB): " << (MROW*NCOL + MROW + NCOL)*DoubleSize/1024/1024/1024 << endl; 
+  //cout << "GFLOPS: " << 2.0*MROW*NCOL/t1/1024/1024/1024 << endl;
+  GFlopsMatrixVector[ThreadsUsed - 1] = 2.0*MROW*NCOL/t1/1024/1024/1024;
+  //cout << "Gib/sec: "<< (4.0*MROW*NCOL+MROW)*DoubleSize/t1/1024/1024/1024 << endl;
+  GibPerSecMatrixVector[ThreadsUsed - 1] = (4.0*MROW*NCOL+MROW)*DoubleSize/t1/1024/1024/1024;
   // ############################################ ----------------------------
   }
   // ###########################################################################################
   { /* */ // Matrix-Matrix Multiplication
-  cout << "------" << endl;
+  if(ThreadsUsed == 1){cout << "------" << endl;}
   double const NLOOPSMatrixMatrix = 5.0; // Matrix-Matrix
 
   int const QROW= 2000, BROW = 2000, BCOL= 2000;
@@ -200,28 +242,35 @@ int main(){
 
   // Do Calculation
   for (int i = 0; i < NLOOPSMatrixMatrix; ++i){
+    //MatrixMultiplication(Q,B,product);
     MatrixMultiplicationParallel(Q,B,product);
-    //MatrixMultiplicationParallel(Q,B,product);
   }
   // End Calculation
   // ############################################ Print timing
   t1 = omp_get_wtime() - tstart;
+  TimesMatrixMatrix[ThreadsUsed - 1] = t1;
+  if(ThreadsUsed == 1){  // Setting up efficiency vector
+	EfficiencyBenchmarkMatrixMatrix = t1;
+	EfficiencyMatrixMatrix[ThreadsUsed - 1] = 1.0;}
+	else{EfficiencyMatrixMatrix[ThreadsUsed - 1] = EfficiencyBenchmarkMatrixMatrix/(ThreadsUsed*t1);}
   //t1 /= CLOCKS_PER_SEC;     // now, t1 in seconds
-  cout << "Matrix-Matrix Multiplication "<< endl;
-  cout << "Total time in sec: " << t1 << endl;
-  t1 /= NLOOPSMatrixMatrix; // divide by number of function calls
+  if(ThreadsUsed == 1){ cout << "Matrix-Matrix Multiplication "<< endl; }
+  //cout << "Total time in sec: " << t1 << endl;
+  //t1 /= NLOOPSMatrixMatrix; // divide by number of function calls
   cout.precision(2);
-  cout << "Matrix Dimensions (M times L and L times N): M = " << QROW << ", L = " << BROW << ", N = " << BCOL << endl;
-  cout << "Number of Loops: " << NLOOPSMatrixMatrix << endl;
-  cout << "Timing in sec. per loop: " << t1 << endl;
-  cout << "Memory allocated (in GB): " << (QROW*BROW + BROW*BCOL+QROW*BCOL)*DoubleSize/1024/1024/1024 << endl;
-  cout << "GFLOPS: " << (2.0*QROW*BROW*BCOL)/t1/1024/1024/1024 << endl;
-  cout << "Gib/sec: "<< (4.0*QROW*BROW*BCOL+QROW*BCOL)*DoubleSize/t1/1024/1024/1024 << endl;
+  if(ThreadsUsed == 1){ cout << "Matrix Dimensions (M times L and L times N): M = " << QROW << ", L = " << BROW << ", N = " << BCOL << endl;
+  cout << "Number of Loops: " << NLOOPSMatrixMatrix << endl;}
+  //cout << "Timing in sec. per loop: " << t1 << endl;
+  //cout << "Memory allocated (in GB): " << (QROW*BROW + BROW*BCOL+QROW*BCOL)*DoubleSize/1024/1024/1024 << endl;
+  //cout << "GFLOPS: " << (2.0*QROW*BROW*BCOL)/t1/1024/1024/1024 << endl;
+  GFlopsMatrixMatrix[ThreadsUsed - 1] = (2.0*QROW*BROW*BCOL)/t1/1024/1024/1024;
+  //cout << "Gib/sec: "<< (4.0*QROW*BROW*BCOL+QROW*BCOL)*DoubleSize/t1/1024/1024/1024 << endl;
+  GibPerSecMatrixMatrix[ThreadsUsed - 1] = (4.0*QROW*BROW*BCOL+QROW*BCOL)*DoubleSize/t1/1024/1024/1024;
   // ############################################ ----------------------------
   }
   // ###########################################################################################
   { /* */// Polynomial Evaluation
-  cout << "------" << endl;
+  if(ThreadsUsed == 1){cout << "------" << endl;}
   double const NLOOPSPolynomialEvaluation = 10.0;
   int polynomialSize = 200000;
   int evaluations = 5000;
@@ -245,19 +294,110 @@ int main(){
   // End Calculation
   // ############################################ Print timing
   t1 = omp_get_wtime() - tstart;
+  TimesPolynomialEvaluation[ThreadsUsed - 1] = t1;
+  if(ThreadsUsed == 1){  // Setting up efficiency vector
+	EfficiencyBenchmarkPolynomialEvaluation = t1;
+	EfficiencyPolynomialEvaluation[ThreadsUsed - 1] = 1.0;}
+	else{EfficiencyPolynomialEvaluation[ThreadsUsed - 1] = EfficiencyBenchmarkPolynomialEvaluation/(ThreadsUsed*t1);}
   //t1 /= CLOCKS_PER_SEC;     // now, t1 in seconds
-  cout << "Polynomial Evaluation "<< endl;
-  cout << "Total time in sec: " << t1 << endl;
-  t1 /= NLOOPSPolynomialEvaluation; // divide by number of function calls
+  if(ThreadsUsed == 1){cout << "Polynomial Evaluation "<< endl;}
+  //cout << "Total time in sec: " << t1 << endl;
+  //t1 /= NLOOPSPolynomialEvaluation; // divide by number of function calls
   cout.precision(2);
-  cout << "Size of vector x: " << evaluations << endl;
+  if(ThreadsUsed == 1){cout << "Size of vector x: " << evaluations << endl;
   cout << "Polynomial size (N) : " << polynomialSize << endl;
-  cout << "Number of Loops: " << NLOOPSPolynomialEvaluation << endl;
-  cout << "Timing in sec. per loop: " << t1 << endl;
-  cout << "Memory allocated (in GB): " << (2.0*evaluations+polynomialSize)*DoubleSize/1024/1024/1024 << endl;
-  cout << "GFLOPS: " << (3.0*polynomialSize*evaluations)/t1/1024/1024/1024 << endl;
-  cout << "Gib/sec: "<< 7.0*evaluations*polynomialSize*DoubleSize/t1/1024/1024/1024 << endl;
+  cout << "Number of Loops: " << NLOOPSPolynomialEvaluation << endl;}
+  //cout << "Timing in sec. per loop: " << t1 << endl;
+  //cout << "Memory allocated (in GB): " << (2.0*evaluations+polynomialSize)*DoubleSize/1024/1024/1024 << endl;
+  //cout << "GFLOPS: " << (3.0*polynomialSize*evaluations)/t1/1024/1024/1024 << endl;
+  GFlopsPolynomialEvaluation[ThreadsUsed - 1] = (3.0*polynomialSize*evaluations)/t1/1024/1024/1024;
+  //cout << "Gib/sec: "<< 7.0*evaluations*polynomialSize*DoubleSize/t1/1024/1024/1024 << endl;
+  GibPerSecPolynomialEvaluation[ThreadsUsed - 1] = 7.0*evaluations*polynomialSize*DoubleSize/t1/1024/1024/1024;
   // ############################################ ----------------------------
   }
+  if(ThreadsUsed == 1){cout << "------" << endl;}
+  }
+  
+  // -------------------------------  Printing Total Times in Matlab format
+  cout << "TimesMatrixVector = [ ";
+  for(int z=0; z < MaxNumberOfThreads; ++z)
+  {cout << TimesMatrixVector[z] << " ";}
+  cout << "];" << endl;
+
+  cout << "TimesMatrixMatrix = [ ";
+  for(int z=0; z < MaxNumberOfThreads; ++z)
+  {cout << TimesMatrixMatrix[z] << " ";}
+  cout << "];" << endl;
+  
+  cout << "TimesPolynomialEvaluation = [ ";
+  for(int z=0; z < MaxNumberOfThreads; ++z)
+  {cout << TimesPolynomialEvaluation[z] << " ";}
+  cout << "];" << endl; 
+  cout << "------" << endl;
+  
+  // -------------------------------  Printing Efficiency in Matlab format
+  cout << "EfficiencyMatrixVector = [ ";
+  for(int z=0; z < MaxNumberOfThreads; ++z)
+  {cout << EfficiencyMatrixVector[z] << " ";}
+  cout << "];" << endl;
+
+  cout << "EfficiencyMatrixMatrix = [ ";
+  for(int z=0; z < MaxNumberOfThreads; ++z)
+  {cout << EfficiencyMatrixMatrix[z] << " ";}
+  cout << "];" << endl;
+  
+  cout << "EfficiencyPolynomialEvaluation = [ ";
+  for(int z=0; z < MaxNumberOfThreads; ++z)
+  {cout << EfficiencyPolynomialEvaluation[z] << " ";}
+  cout << "];" << endl; 
+  cout << "------" << endl;
+  
+  // -------------------------------  Printing GFlops Vectors in Matlab format
+  
+    cout << "GFlopsMatrixVector = [ ";
+  for(int z=0; z < MaxNumberOfThreads; ++z)
+  {cout << GFlopsMatrixVector[z] << " ";}
+  cout << "];" << endl;
+
+  cout << "GFlopsMatrixMatrix = [ ";
+  for(int z=0; z < MaxNumberOfThreads; ++z)
+  {cout << GFlopsMatrixMatrix[z] << " ";}
+  cout << "];" << endl;
+  
+  cout << "GFlopsPolynomialEvaluation = [ ";
+  for(int z=0; z < MaxNumberOfThreads; ++z)
+  {cout << GFlopsPolynomialEvaluation[z] << " ";}
+  cout << "];" << endl;
+  cout << "------" << endl;
+  
+  // ------------------------------- // Printing GibPerSecond Vector in Matlab format
+  
+  cout << "GipPerSecMatrixVector = [ ";
+  for(int z=0; z < MaxNumberOfThreads; ++z)
+  {cout << GibPerSecMatrixVector[z] << " ";}
+  cout << "];" << endl;
+
+  cout << "GipPerSecMatrixMatrix = [ ";
+  for(int z=0; z < MaxNumberOfThreads; ++z)
+  {cout << GibPerSecMatrixMatrix[z] << " ";}
+  cout << "";
+  cout << "];" << endl;
+  
+  cout << "GipPerSecPolynomialEvaluation = [ ";
+  for(int z=0; z < MaxNumberOfThreads; ++z)
+  {cout << GibPerSecPolynomialEvaluation[z] << " ";}
+  cout << "];" << endl;
+  cout << "------" << endl;
+  
+  // ------------------------------- // Matlab plots efficiency
+  cout << "NumberofThreads = [1:"<< MaxNumberOfThreads << "];" << endl;
+  cout << "figure" << endl;
+  cout << "subplot(3,1,1)" << endl;
+  cout << "plot(NumberofThreads,EfficiencyMatrixVector)" << endl;
+  cout << "subplot(3,1,2)" << endl;
+  cout << "plot(NumberofThreads,EfficiencyMatrixMatrix)" << endl;
+  cout << "subplot(3,1,3)" << endl;
+  cout << "plot(NumberofThreads,EfficiencyPolynomialEvaluation)" << endl;
+  
   return 0;
 }

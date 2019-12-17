@@ -84,8 +84,8 @@ int main(int argc, char const *argv[])
     double sk(0.0);
     for (int i = 0; i < NLOOPS; ++i)
     {
-        sk = scalar(x, y);
-//        sk = scalarNofor(x,y);
+//        sk = scalar(x, y);
+        sk = scalarNofor(x,y);
 //      sk = norm(x);
     }
 
@@ -134,6 +134,6 @@ int main(int argc, char const *argv[])
     
     //cout << "Apending vr1 & vr2 : " << vr1 << endl;
 
-
     return 0;
+    
 }  // memory for x and y will be deallocated their destructors

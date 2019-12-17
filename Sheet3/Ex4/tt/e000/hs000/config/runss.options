@@ -1,0 +1,14 @@
+-r
+/home/huanc/Documents/Master-HPC/2019WS_High_Performance_Computing/Sheet3/Ex4/tt/e000/hs000
+--mrte-mode=auto
+--follow-child
+--return-app-exitcode
+--strategy=ld-linux.so.2:notrace:notrace,ld-linux-x86-64.so.2:notrace:notrace
+--interval=10
+--data-limit-mb=500
+--stack-stitching
+--stackwalk=offline
+--mrte-type=java,python
+--type=cpu:stack
+--
+/home/huanc/Documents/Master-HPC/2019WS_High_Performance_Computing/Sheet3/Ex4/a.out
