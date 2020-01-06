@@ -11,6 +11,8 @@
 	@retun 		resulting new pair_cont
 */
 void count_goldbach(const int n, std::vector<int> &pair_cont, std::vector<int> const &primes);
+void count_goldbachTwo(const int n, std::vector<int> &pair_cont, std::vector<int> const &primes);
+void count_goldbachCheck(const int n, std::vector<int> &pair_cont, std::vector<int> const &primes);
 
 std::vector<int> get_primes(int max);
 
