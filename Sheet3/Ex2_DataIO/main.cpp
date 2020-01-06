@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdio.h>
 #include <vector>
 #include <string>
 #include <ctime>
@@ -15,7 +16,7 @@ int main()
  //###################################################################
  // Initialization
     cout << "File einlesen." << endl;
-    const string name("data_1.txt");        // name of input file
+    const string name("data_1.txt");       // name of input file
     const string name2("out_1.txt");        // name of output file
 	int NLOOPS = 20;
 
@@ -30,10 +31,10 @@ int main()
     //size_t const N = a.size();
     size_t const N = datavec.size();
 	
-	// Decomment these three lines to create a new file of size a.size()
-	//vector<double> a(200000000);
-	//for(size_t i = 0; i< a.size(); ++i){a[i] = rand()%1000 + 1;}
-	//write_vector_to_file(name, a);
+	//// Un-comment these three lines to create a new file of size a.size()
+	vector<double> a(2000);  // 200.000.000 for testing in computer with 32 processors.
+	for(size_t i = 0; i< a.size(); ++i){a[i] = rand()%1000 + 1;}
+	write_vector_to_file(name, a);
 	
 	cout<< "inizialization finished" << endl;
 	cout<< "Read to vec begins" << endl;
@@ -71,6 +72,8 @@ int main()
         cout << "  " << b.at(k);
     }
     cout << endl;
-
+// ############### Remove big file "data1.txt"
+	remove("data_1.txt");
+	
     return 0;
 }
