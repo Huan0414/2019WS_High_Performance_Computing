@@ -92,31 +92,49 @@ vector<int> reduction_vec_append(int n)
     return vec;
 }
 
+//vector<int> reduction_vec_append_manually(int n)
+//{ 
+    ////vector<int> vec;
+    //vector<int> global_vec;
+    //#pragma omp parallel default(none) shared(cout,n,global_vec)
+    //{
+        ////vec.resize(n);
+        //vector<int> vec(n);
+        //int const th_id = omp_get_thread_num();
+        //#praga omp ordered
+        //iota(vec.begin(),vec.end(), th_id);
+        //global_vec.insert(global_vec.end(), vec.begin(), vec.end());
+        ////#pragma omp critical
+		////{
+			////cout << "print out vec of each thread: " << threadNumber << endl;
+			////cout << vec << endl;
+		////}
+		//// do appending manually
+		////#pragma omp for ordered
+		//for (int t = 0; t < omp_get_num_threads(); t++) 
+		//{
+			//#pragma omp barrier
+			//if (t == omp_get_thread_num()) 
+			//{
+				//global_vec.insert(global_vec.end(), vec.begin(), vec.end());
+			//}
+		//}
+	//}
+    //return global_vec;
+//}
+
 vector<int> reduction_vec_append_manually(int n)
 { 
-    //vector<int> vec;
+    //vector<int> vec(n);
     vector<int> global_vec;
-	#pragma omp parallel default(none) shared(cout,n,global_vec) 
-    {
-        //vec.resize(n);
-        vector<int> vec(n);
-        int const th_id = omp_get_thread_num();
-        iota(vec.begin(),vec.end(), th_id);
-        //#pragma omp critical
-		//{
-			//cout << "print out vec of each thread: " << threadNumber << endl;
-			//cout << vec << endl;
-		//}
-		
-		// do appending manully
-		for (int t = 0; t < omp_get_num_threads(); t++) 
-			{
-				#pragma omp barrier
-				if (t == omp_get_thread_num()) 
-				{
-					global_vec.insert(global_vec.end(), vec.begin(), vec.end());
-				}
-			}
+    #pragma omp parallel for ordered default(none) shared(cout,n,global_vec) 
+	for (int t = 0; t < omp_get_num_threads(); ++t) 
+	{
+		vector<int> vec(n);
+        //int const th_id = omp_get_thread_num();
+        #pragma omp ordered
+        iota(vec.begin(),vec.end(), t);      
+		global_vec.insert(global_vec.end(), vec.begin(), vec.end());
 	}
     return global_vec;
 }
@@ -124,7 +142,7 @@ vector<int> reduction_vec_append_manually(int n)
 vector<int> reduction_vec(int n)
 { 
     vector<int> vec(n);
-#pragma omp parallel default(none) shared(cout) reduction(VecAdd:vec)
+    #pragma omp parallel default(none) shared(cout) reduction(VecAdd:vec)
     {
         //#pragma omp critical
         //cout << omp_get_thread_num() << " : " << vec.size() << endl;

@@ -11,6 +11,7 @@ using namespace std;
 
 int main(int argc, char const *argv[])
 {
+	omp_set_num_threads(10);
 	cout << "Number of available processors: " << omp_get_num_procs() << endl;
 	cout << "The return of command 'omp_in_parallel': " << omp_in_parallel << endl;
     int const NLOOPS = 200;        // chose a value such that the benchmark runs at least 10 sec.
@@ -105,10 +106,10 @@ int main(int argc, char const *argv[])
 // Timings  and Performance
     cout << endl;
     cout.precision(2);
-    cout << "Total time in sec.	:" << t1 << endl;
+    cout << "Total time in sec.	: " << t1 << endl;
     cout << "Time/loop in sec.	: " << t2 << endl;
-    cout << "GFLOPS		: " << 2.0 * N / t2 / 1024 / 1024 / 1024 << endl;
-    cout << "GiByte/s	: " << 2.0 * N / t2 / 1024 / 1024 / 1024 * sizeof(x[0]) << endl;
+    cout << "GFLOPS		        : " << 2.0 * N / t2 / 1024 / 1024 / 1024 << endl;
+    cout << "GiByte/s	        : " << 2.0 * N / t2 / 1024 / 1024 / 1024 * sizeof(x[0]) << endl;
 
 //#########################################################################
 
