@@ -9,6 +9,7 @@
 
 using namespace std;
 
+//g++ -O3 -fopenmp main.cpp mylib.h get_primes.cpp count_goldbach.cpp
 
 int main()
 {
