@@ -2,6 +2,7 @@
 #include "userset.h"
 
 #include <algorithm>
+#include <omp.h>
 #include <cassert>
 #include <cmath>
 #include <iomanip>
@@ -288,7 +289,7 @@ void CRS_Matrix::Defect(vector<double> &w,
 {
     assert( _nrows==static_cast<int>(w.size()) );
     assert( w.size()==u.size() && u.size()==f.size() );
-
+	#pragma omp parallel for default(none) shared(w,f,_nrows,_id,u,_sk)
     for (int row = 0; row < _nrows; ++row)
     {
         double wi = f[row];

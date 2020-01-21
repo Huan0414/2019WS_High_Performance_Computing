@@ -1,0 +1,338 @@
+Only in .: a.out
+diff ./Doxyfile /home/huanc/Documents/try/template_jacobi/Doxyfile
+29c29
+< PROJECT_NAME           = jacobi_oo_STL
+---
+> PROJECT_NAME           = jacobi_oo_STL_shm
+Only in .: geom.d
+Binary files ./geom.o and /home/huanc/Documents/try/template_jacobi/geom.o differ
+diff ./getmatrix.cpp /home/huanc/Documents/try/template_jacobi/getmatrix.cpp
+5d4
+< #include <omp.h>
+185c184
+<     double ske[3][3], fe[3];
+---
+>     //double ske[3][3], fe[3];               // move inside loop (==> thread private)
+192a192
+>         double ske[3][3], fe[3];             // OpenMP: Thread private
+292c292
+< 	#pragma omp parallel for default(none) shared(w,f,_nrows,_id,u,_sk)
+---
+> 
+Only in .: getmatrix.d
+Binary files ./getmatrix.o and /home/huanc/Documents/try/template_jacobi/getmatrix.o differ
+Only in .: html
+diff ./jacsolve.cpp /home/huanc/Documents/try/template_jacobi/jacsolve.cpp
+47d46
+<     cout << sigma << "  " << tol2 <<endl;
+52,53c51,52
+<         SK.Defect(r, f, u);                  //  r := f - K*u      
+<         vddiv(w, r, dd);                     //  w := D^{-1}*r       
+---
+>         SK.Defect(r, f, u);                  //  r := f - K*u
+>         vddiv(w, r, dd);                     //  w := D^{-1}*r
+55,56c54
+<       //	cout << "Iteration " << iter << " : " << sqrt(sigma/sigma0) << endl;
+<           cout << sigma << "  " << tol2 <<endl;
+---
+> //      	cout << "Iteration " << iter << " : " << sqrt(sigma/sigma0) << endl;
+60c58
+< exit(-1);
+---
+> 
+Only in .: jacsolve.d
+Binary files ./jacsolve.o and /home/huanc/Documents/try/template_jacobi/jacsolve.o differ
+diff ./main.cpp /home/huanc/Documents/try/template_jacobi/main.cpp
+13,14d12
+< #include <omp.h>
+< #include <ctime>
+16,17c14
+< #include <string>
+< 
+---
+> #include <omp.h>
+36a34
+>         exit(-1);
+38,39c36
+<     else
+<     {
+---
+> 
+43,51c40,48
+<         //bool ScaleUp = !true;
+<         int nx, ny, NXglob, NYglob; /* number of local intervals on (xl,xr)=:nx, (yb,yt)=:ny */
+<         //nx = 1024;
+<         //ny = 1024;
+<         nx = 100;
+<         ny = 100;
+<         NXglob = nx * procx;
+<         NYglob = ny * procy;
+<         cout << "Intervalls: " << NXglob << " x " << NYglob << endl;
+---
+>     //bool ScaleUp = !true;
+>     int nx, ny, NXglob, NYglob; /* number of local intervals on (xl,xr)=:nx, (yb,yt)=:ny */
+>     //nx = 1024;
+>     //ny = 1024;
+>     nx = 1000;
+>     ny = 1000;
+>     NXglob = nx * procx;
+>     NYglob = ny * procy;
+>     cout << "Intervalls: " << NXglob << " x " << NYglob << endl;
+53,55c50
+< // ##################### STL ###########################################
+< {
+<         //########################################################################
+---
+> //########################################################################
+72c67,68
+<         
+---
+> // ##################### STL ###########################################
+>     {
+78,79c74,75
+<         vector<double> uv(SK.Nrows(),0.0);     // temperature
+<         vector<double> fv(SK.Nrows(),0.0);     // r.h.s.
+---
+>         vector<double> uv(SK.Nrows(), 0.0);    // temperature
+>         vector<double> fv(SK.Nrows(), 0.0);    // r.h.s.
+84,85d79
+<         //mesh.SetU(uv);         // deprecated
+<         //mesh.SetF(fv);         // deprecated
+88c82
+<         mesh.SetValues(uv, [](double x, double y) -> double {return 0.0*x*y;} );  // lambda function
+---
+>         mesh.SetValues(uv, [](double x, double y) -> double {return 0.0 * x *y;} ); // lambda function
+90c84
+<         SK.ApplyDirichletBC(uv,fv);
+---
+>         SK.ApplyDirichletBC(uv, fv);
+95c89
+<         double tstart = omp_get_wtime();
+---
+>         double tstart = omp_get_wtime();                  // OpenMP
+100c94
+<         double t1 = omp_get_wtime() - tstart;
+---
+>         double t1 = omp_get_wtime() - tstart;             // OpenMP
+103,104d96
+<         //CompareVectors(uv, nnode, u, 1e-6);    // Check correctness
+< 
+108c100
+< }
+---
+>     }
+110,114c102,106
+< {
+<         //Mesh_2d_3_matlab const mesh("square_tiny.txt");
+<         Mesh_2d_3_matlab const mesh("square_100.txt");
+<         //Mesh_2d_3_matlab const mesh("L_shape.txt");
+<         //mesh.Debug();
+---
+> //{
+>     ////Mesh_2d_3_matlab const mesh("square_tiny.txt");
+>     //Mesh_2d_3_matlab const mesh("square_100.txt");
+>     ////Mesh_2d_3_matlab const mesh("L_shape.txt");
+>     ////mesh.Debug();
+116,117c108,109
+<         CRS_Matrix SK(mesh);                   // CRS matrix
+<         //SK.Debug();
+---
+>     //CRS_Matrix SK(mesh);                   // CRS matrix
+>     ////SK.Debug();
+119,120c111,112
+<         vector<double> uv(SK.Nrows(),0.0);     // temperature
+<         vector<double> fv(SK.Nrows(),0.0);     // r.h.s.
+---
+>     //vector<double> uv(SK.Nrows(),0.0);     // temperature
+>     //vector<double> fv(SK.Nrows(),0.0);     // r.h.s.
+122,123c114,115
+<         SK.CalculateLaplace(fv);
+<         //SK.Debug();
+---
+>     //SK.CalculateLaplace(fv);
+>     ////SK.Debug();
+125,128c117,119
+<         //mesh.SetU(uv);         // deprecated
+<         // Two ways to initialize the vector
+<         //mesh.SetValues(uv,f_zero);             // user function
+<         mesh.SetValues(uv, [](double x, double y) -> double {return 0.0*x*y;} );  // lambda function
+---
+>     //// Two ways to initialize the vector
+>     ////mesh.SetValues(uv,f_zero);             // user function
+>     //mesh.SetValues(uv, [](double x, double y) -> double {return 0.0*x*y;} );  // lambda function
+130,132c121,123
+<         SK.ApplyDirichletBC(uv,fv);
+<         //SK.Compare2Old(nnode, id, ik, sk);
+<         //SK.Debug();
+---
+>     //SK.ApplyDirichletBC(uv,fv);
+>     ////SK.Compare2Old(nnode, id, ik, sk);
+>     ////SK.Debug();
+134,136c125,126
+<         //double tstart = clock();                        // timing
+< 		double tstart = omp_get_wtime();
+<         JacobiSolve(SK, fv, uv );          // solve the system of equations
+---
+>     ////double tstart = clock();                        // timing
+>     //double tstart = omp_get_wtime();                  // OpenMP
+138,140c128
+<         //double t1 = (clock() - tstart) / CLOCKS_PER_SEC;// timing
+<         double t1 = omp_get_wtime() - tstart;
+<         cout << "JacobiSolve: timing in sec. : " << t1 << endl;
+---
+>     //JacobiSolve(SK, fv, uv );          // solve the system of equations
+142,144c130,136
+<         //mesh.Write_ascii_matlab("uv.txt", uv);
+<         //mesh.Visualize(uv);
+<     }
+---
+>     ////double t1 = (clock() - tstart) / CLOCKS_PER_SEC;// timing
+>     //double t1 = omp_get_wtime() - tstart;             // OpenMP
+>     //cout << "JacobiSolve: timing in sec. : " << t1 << endl;
+> 
+>     ////mesh.Write_ascii_matlab("uv.txt", uv);
+>     ////mesh.Visualize(uv);
+>     //}
+146d137
+< }
+Only in .: main.d
+Binary files ./main.GCC_ and /home/huanc/Documents/try/template_jacobi/main.GCC_ differ
+Binary files ./main.o and /home/huanc/Documents/try/template_jacobi/main.o differ
+diff ./Makefile /home/huanc/Documents/try/template_jacobi/Makefile
+20,21c20
+< CXXFLAGS += -g -fopenmp
+< LINKFLAGS   += -fopenmp
+---
+> CXXFLAGS += -g
+Only in .: out_diff.txt
+diff ./square.m /home/huanc/Documents/try/template_jacobi/square.m
+1,41c1,41
+< % Square: 
+< %   flatpak run org.octave.Octave <filename>
+< %      or
+< %   octave --no-window-system --no-gui  -qf <filename>
+< 
+< clear all
+< clc
+< % %% L-shape
+< % g=[2 0 2 0 0 1 0;        % #vertices,v_1x, v_2x, v_1y, v_2y, subdomain_left, subdomain_right
+< %    2 2 2 0 1 1 0;
+< %    2 2 1 1 0.5 1 0;
+< %    2 1 1 0.5 2 1 0;
+< %    2 1 0 2 2 1 0;
+< %    2 0 0 2 0 1 0]';
+< 
+< %% square
+< g=[2 0 1 0 0 1 0;        % #vertices,v_1x, v_2x, v_1y, v_2y, subdomain_left, subdomain_right
+<    2 1 1 0 1 1 0;
+<    2 1 0 1 1 1 0;
+<    2 0 0 1 0 1 0]';
+< 
+< [p,e,t] = initmesh(g,'hmax',0.01); 
+< pdemesh(p,e,t)
+< 
+< %% GH
+< % output from <https://de.mathworks.com/help/pde/ug/initmesh.html initmesh>
+< %
+< % coordinates  p: [2][nnode]
+< % connectivity t: [4][nelem]   with  t(4,:) are the subdomain numbers
+< % edges        e: [7][nedges]  boundary edges
+< %                              e([1,2],:) - start/end vertex of edge
+< %                              e([3,4],:) - start/end values
+< %                              e(5,:)     - segment number
+< %                              e([6,7],:) - left/right subdomain
+< 
+< ascii_write_mesh( p, t, e, mfilename);
+< 
+< 
+< 
+< % tmp=t(1:3,:)
+< 
+---
+> % Square: 
+> %   flatpak run org.octave.Octave <filename>
+> %      or
+> %   octave --no-window-system --no-gui  -qf <filename>
+> 
+> clear all
+> clc
+> % %% L-shape
+> % g=[2 0 2 0 0 1 0;        % #vertices,v_1x, v_2x, v_1y, v_2y, subdomain_left, subdomain_right
+> %    2 2 2 0 1 1 0;
+> %    2 2 1 1 0.5 1 0;
+> %    2 1 1 0.5 2 1 0;
+> %    2 1 0 2 2 1 0;
+> %    2 0 0 2 0 1 0]';
+> 
+> %% square
+> g=[2 0 1 0 0 1 0;        % #vertices,v_1x, v_2x, v_1y, v_2y, subdomain_left, subdomain_right
+>    2 1 1 0 1 1 0;
+>    2 1 0 1 1 1 0;
+>    2 0 0 1 0 1 0]';
+> 
+> [p,e,t] = initmesh(g,'hmax',0.01); 
+> pdemesh(p,e,t)
+> 
+> %% GH
+> % output from <https://de.mathworks.com/help/pde/ug/initmesh.html initmesh>
+> %
+> % coordinates  p: [2][nnode]
+> % connectivity t: [4][nelem]   with  t(4,:) are the subdomain numbers
+> % edges        e: [7][nedges]  boundary edges
+> %                              e([1,2],:) - start/end vertex of edge
+> %                              e([3,4],:) - start/end values
+> %                              e(5,:)     - segment number
+> %                              e([6,7],:) - left/right subdomain
+> 
+> ascii_write_mesh( p, t, e, mfilename);
+> 
+> 
+> 
+> % tmp=t(1:3,:)
+> 
+Only in .: ToDo.txt
+Only in .: userset.d
+Binary files ./userset.o and /home/huanc/Documents/try/template_jacobi/userset.o differ
+diff ./vdop.cpp /home/huanc/Documents/try/template_jacobi/vdop.cpp
+4d3
+< #include <omp.h>
+15c14
+< 	#pragma omp parallel for default(none) shared(x,y,z,n)
+---
+> 
+25,26c24,26
+< void vdaxpy(std::vector<double> & x, std::vector<double> const& y,
+<                        double alpha, std::vector<double> const& z )
+---
+> 
+> void vdaxpy(vector<double> & x, vector<double> const& y,
+>                   double alpha, vector<double> const& z )
+30c30
+< 	#pragma omp parallel for default(none) shared(x,y,z,n,alpha)
+---
+> 
+39c39
+< double dscapr(std::vector<double> const& x, std::vector<double> const& y)
+---
+> double dscapr(vector<double> const& x, vector<double> const& y)
+42d41
+<     size_t n = x.size();
+43a43
+>     size_t n = x.size();
+45c45
+<     #pragma omp parallel for default(none) shared(x,y,n) reduction(+:s)
+---
+> #pragma omp parallel for default(none) shared(x,y)  firstprivate(n) reduction(+:s)
+48,49c48
+<         //s += x[k] * y[k];
+<         s = x[k] * y[k];
+---
+>         s += x[k] * y[k];
+51d49
+< 
+69c67
+< bool CompareVectors(std::vector<double> const& x, int const n, double const y[], double const eps)
+---
+> bool CompareVectors(vector<double> const& x, int const n, double const y[], double const eps)
+Only in .: vdop.d
+Binary files ./vdop.o and /home/huanc/Documents/try/template_jacobi/vdop.o differ

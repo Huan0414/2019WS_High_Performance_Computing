@@ -13,7 +13,7 @@ using namespace std;
 
 int main()
 {
-	size_t MaxNumberOfThreads = 128;
+	size_t MaxNumberOfThreads = 64;
 	omp_set_num_threads(MaxNumberOfThreads);
 	cout << "Number of Threads: " << MaxNumberOfThreads << endl;
     int n;

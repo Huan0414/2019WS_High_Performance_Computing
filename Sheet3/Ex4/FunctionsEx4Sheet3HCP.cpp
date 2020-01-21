@@ -123,4 +123,38 @@ void PolynomialEvaluation(std::vector<double> const &a, std::vector<double> cons
         }
     }
 
+////###################################################################
+////polynomial function, parallize inner loop
+//void PolynomialEvaluation2(vector<double> const &a, vector<double> const &x, vector<double> &result){
+    //int Xsize = x.size();
+    //int Asize = a.size();
+    //int Rsize = result.size();
+    //assert(Rsize == Xsize);
+	    
+            
+    //for (int j = 0; j< Xsize; j++)
+    //{
+        //double sum = 0.0;
+        
+        //#pragma omp parallel default(none) shared(a,x,Xsize,Asize,j) reduction(+:sum)
+		//{
+			
+			//int nthrd = omp_get_num_threads();
+			//int tid = omp_get_thread_num();
+			//int portionsize = 1.0*Asize/nthrd; // divide calculation to all threads
+			//int sizestart = tid*portionsize ; // start number of each thread
+			//int sizeend = min(sizestart + portionsize , Asize + 1); // end number of each thread
+			
+			//double x_iterative = pow(x[j],sizestart); //define initialized x^k for each thread
+			//for (int i = sizestart; i < sizeend; i++)
+			//{
+				//sum += a[i]*x_iterative;
+				//x_iterative *= x[j]; 
+			//}
+		//}
+		//result[j] = sum;
+	//}
+	
+}
+
 }

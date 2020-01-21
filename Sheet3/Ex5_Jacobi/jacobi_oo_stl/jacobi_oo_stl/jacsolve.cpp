@@ -44,18 +44,20 @@ void JacobiSolve(CRS_Matrix const &SK, vector<double> const &f, vector<double> &
     // Iteration sweeps
     int iter  = 0;
     double sigma = sigma0;
+    cout << sigma << "  " << tol2 <<endl;
     while ( sigma > tol2 * sigma0 && maxiter > iter)
     {
         ++iter;
         vdaxpy(u, u, omega, w );             //  u := u + om*w
-        SK.Defect(r, f, u);                  //  r := f - K*u
-        vddiv(w, r, dd);                     //  w := D^{-1}*r
+        SK.Defect(r, f, u);                  //  r := f - K*u      
+        vddiv(w, r, dd);                     //  w := D^{-1}*r       
         sigma = dscapr(w, r);                // s0 := <w,r>
-//      	cout << "Iteration " << iter << " : " << sqrt(sigma/sigma0) << endl;
+      //	cout << "Iteration " << iter << " : " << sqrt(sigma/sigma0) << endl;
+   //       cout << sigma << "  " << tol2 <<endl;
     }
     cout << "aver. Jacobi rate :  " << exp(log(sqrt(sigma / sigma0)) / iter) << "  (" << iter << " iter)" << endl;
     cout << "final error: " << sqrt(sigma / sigma0) << " (rel)   " << sqrt(sigma) << " (abs)\n";
-
+   //exit(-1);
     return;
 }
 

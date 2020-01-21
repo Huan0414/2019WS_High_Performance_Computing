@@ -17,7 +17,8 @@ OBJECTS = $(SOURCES:.cpp=.o)
 PROGRAM	= ${MAIN}.${COMPILER}
 
 # uncomment the next to lines for debugging and detailed performance analysis
-CXXFLAGS += -g
+CXXFLAGS += -g -fopenmp
+LINKFLAGS   += -fopenmp
 # -pg slows down the code on my laptop when using CLANG_
 #LINKFLAGS += -pg
 #CXXFLAGS += -Q --help=optimizers

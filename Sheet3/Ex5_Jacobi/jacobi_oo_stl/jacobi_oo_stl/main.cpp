@@ -10,6 +10,11 @@
 
 #include <cmath>
 #include <iostream>
+#include <omp.h>
+#include <ctime>
+#include <sstream>
+#include <string>
+
 using namespace std;
 
 
@@ -39,14 +44,32 @@ int main(int , char ** )
         int nx, ny, NXglob, NYglob; /* number of local intervals on (xl,xr)=:nx, (yb,yt)=:ny */
         //nx = 1024;
         //ny = 1024;
-        nx = 100;
-        ny = 100;
+        nx = 1000;
+        ny = 1000;
         NXglob = nx * procx;
         NYglob = ny * procy;
         cout << "Intervalls: " << NXglob << " x " << NYglob << endl;
 
 // ##################### STL ###########################################
 {
+        ////########################################################################
+    int nthreads;                                  // OpenMP
+    #pragma omp parallel default(none) shared(cout,nthreads)
+    {
+        //int const th_id  = omp_get_thread_num();   // OpenMP
+        int const nthrds = omp_get_num_threads();  // OpenMP
+        //stringstream ss;
+        //ss << "C++: Hello World from thread " << th_id << " / " << nthrds << endl;
+        //#pragma omp critical
+        //{
+            //cout << ss.str();                      // output to a shared ressource
+        //}
+        //#pragma omp master
+        nthreads = nthrds;                         // transfer nn to to master thread
+    }
+    cout << "   " << nthreads << "   threads have been started." << endl;
+
+        
         Mesh_2d_3_square const mesh(nx, ny);
         //mesh.Debug();
 
@@ -68,11 +91,13 @@ int main(int , char ** )
         //SK.Compare2Old(nnode, id, ik, sk);
         //SK.Debug();
 
-        double tstart = clock();                        // timing
+        //double tstart = clock();                        // timing
+        double tstart = omp_get_wtime();
 
         JacobiSolve(SK, fv, uv );          // solve the system of equations
 
-        double t1 = (clock() - tstart) / CLOCKS_PER_SEC;// timing
+        //double t1 = (clock() - tstart) / CLOCKS_PER_SEC;// timing
+        double t1 = omp_get_wtime() - tstart;
         cout << "JacobiSolve: timing in sec. : " << t1 << endl;
 
         //CompareVectors(uv, nnode, u, 1e-6);    // Check correctness
@@ -106,15 +131,16 @@ int main(int , char ** )
         //SK.Compare2Old(nnode, id, ik, sk);
         //SK.Debug();
 
-        double tstart = clock();                        // timing
-
+        //double tstart = clock();                        // timing
+		double tstart = omp_get_wtime();
         JacobiSolve(SK, fv, uv );          // solve the system of equations
 
-        double t1 = (clock() - tstart) / CLOCKS_PER_SEC;// timing
+        //double t1 = (clock() - tstart) / CLOCKS_PER_SEC;// timing
+        double t1 = omp_get_wtime() - tstart;
         cout << "JacobiSolve: timing in sec. : " << t1 << endl;
 
         //mesh.Write_ascii_matlab("uv.txt", uv);
-        mesh.Visualize(uv);
+        //mesh.Visualize(uv);
     }
     return 0;
 }

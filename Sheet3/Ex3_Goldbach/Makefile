@@ -11,5 +11,6 @@ COMPILER=g++
 run: hello
 	./a.out
 		
-hello:
-	${COMPILER} -O3 -fopenmp main.cpp mylib.h get_primes.cpp count_goldbach.cpp
+hello: main.cpp mylib.h get_primes.cpp count_goldbach.cpp
+#	${COMPILER} -O3 -fopenmp main.cpp mylib.h get_primes.cpp count_goldbach.cpp
+	${COMPILER} -O3 -fopenmp  $^

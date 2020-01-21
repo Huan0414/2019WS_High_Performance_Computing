@@ -33,7 +33,7 @@ void count_goldbachTwo(const int n, vector<int> &pair_cont, vector<int> const &p
 	int N = (n-4)/2 + 1;        //Only consider even numbers from 4-n
     int primeN = primes.size();
 	int sum = 0;
-	float const PercentageInnerForLoop = 0.8;
+	float const PercentageInnerForLoop = 1.0;
 
 	double upperBound = primeN-1;
 	vector<int> upperBounds(primeN,primeN-1);
@@ -66,16 +66,16 @@ void count_goldbachTwo(const int n, vector<int> &pair_cont, vector<int> const &p
     //cout << "Total time	Boundaries: " << t1 << endl;
     
     // Processing of 100% - PercentageInnerForLoop of the data with parallelization of the outer loop
-    #pragma omp parallel for default(none) shared(cout,primes,primeN,n,upperBounds,indexOfPrimeLowerEqualThanEnHalf,PercentageInnerForLoop) private(sum) reduction(VecAdd:pair_cont) schedule(dynamic,10) 
-	for (int i= (int)indexOfPrimeLowerEqualThanEnHalf*PercentageInnerForLoop + 1; i <= indexOfPrimeLowerEqualThanEnHalf; ++i)
-	{	
-		for (int j=i; j <= upperBounds[i]; ++j)
-		{
-			sum = primes[i] + primes[j];
-			//assert(sum/2-2 < N);
-			pair_cont[sum/2-2] += 1;
-		}
-    }
+    //#pragma omp parallel for default(none) shared(cout,primes,primeN,n,upperBounds,indexOfPrimeLowerEqualThanEnHalf,PercentageInnerForLoop) private(sum) reduction(VecAdd:pair_cont) schedule(dynamic,10) 
+	//for (int i= (int)indexOfPrimeLowerEqualThanEnHalf*PercentageInnerForLoop + 1; i <= indexOfPrimeLowerEqualThanEnHalf; ++i)
+	//{	
+		//for (int j=i; j <= upperBounds[i]; ++j)
+		//{
+			//sum = primes[i] + primes[j];
+			////assert(sum/2-2 < N);
+			//pair_cont[sum/2-2] += 1;
+		//}
+    //}
     
     // Processing PercentageInnerForLoop of the data with paralelization of the inner for loop  
 	for (int i=1; i <= indexOfPrimeLowerEqualThanEnHalf*PercentageInnerForLoop; ++i)

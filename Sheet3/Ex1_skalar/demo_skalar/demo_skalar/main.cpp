@@ -11,7 +11,7 @@ using namespace std;
 
 int main(int argc, char const *argv[])
 {
-	omp_set_num_threads(10);
+	//omp_set_num_threads(10);
 	cout << "Number of available processors: " << omp_get_num_procs() << endl;
 	cout << "The return of command 'omp_in_parallel': " << omp_in_parallel << endl;
     int const NLOOPS = 200;        // chose a value such that the benchmark runs at least 10 sec.
@@ -83,29 +83,33 @@ int main(int argc, char const *argv[])
     double tstart = omp_get_wtime();                  // OpenMP
 
     double sk(0.0);
+    vector<int> vra1;
+    vector<int> vra2;
     for (int i = 0; i < NLOOPS; ++i)
     {
-//        sk = scalar(x, y);
-        sk = scalarNofor(x,y);
+        sk = scalar(x, y);
+//        sk = scalarNofor(x,y);
 //      sk = norm(x);
+//		vra1 = reduction_vec_append(3000000);
+//		vra2 = reduction_vec_append_manually(3000000);
     }
 
     double t1 = omp_get_wtime() - tstart;             // OpenMP
     double t2 = t1/NLOOPS;           // divide by number of function calls
 
-//##########################################################################
-// Check the correct result
-    cout << "\n <x,y> = " << sk << endl;
-    if (static_cast<unsigned int>(sk) != N)
-    {
-        cout << "  !!   W R O N G  result   !!\n";
-    }
-    cout << endl;
+////##########################################################################
+//// Check the correct result
+    //cout << "\n <x,y> = " << sk << endl;
+    //if (static_cast<unsigned int>(sk) != N)
+    //{
+        //cout << "  !!   W R O N G  result   !!\n";
+    //}
+    //cout << endl;
 
 //##########################################################################
 // Timings  and Performance
     cout << endl;
-    cout.precision(2);
+    cout.precision(4);
     cout << "Total time in sec.	: " << t1 << endl;
     cout << "Time/loop in sec.	: " << t2 << endl;
     cout << "GFLOPS		        : " << 2.0 * N / t2 / 1024 / 1024 / 1024 << endl;
@@ -113,17 +117,17 @@ int main(int argc, char const *argv[])
 
 //#########################################################################
 
-    cout << "\n  Try the reduction with an STL-vektor \n";
+   // cout << "\n  Try the reduction with an STL-vektor \n";
     
-    auto vr = reduction_vec(100);
-    cout << "done\n";
+    //auto vr = reduction_vec(100);
+    //cout << "done\n";
     //cout << vr << endl;
     
-    auto vra1 = reduction_vec_append(3);
-    cout << "Appending result is: " << vra1 << endl;
+    //auto vra1 = reduction_vec_append(3);
+    //cout << "Appending result is: " << vra1 << endl;
     
-    auto vra2 = reduction_vec_append_manually(3);
-    cout << "Manually ordered appending result is: " << vra2 << endl;
+    //auto vra2 = reduction_vec_append_manually(3);
+    //cout << "Manually ordered appending result is: " << vra2 << endl;
     
     //vector<int> vr1(3);
     //vr1 = {1,2,3};

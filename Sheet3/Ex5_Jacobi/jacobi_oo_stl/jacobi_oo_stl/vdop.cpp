@@ -1,6 +1,7 @@
 #include "vdop.h"
 #include <cassert>               // assert()
 #include <cmath>
+#include <omp.h>
 #include <iostream>
 #include <vector>
 using namespace std;
@@ -11,7 +12,7 @@ void vddiv(vector<double> & x, vector<double> const& y,
 {
     assert( x.size()==y.size() && y.size()==z.size() );
     size_t n = x.size();
-
+	#pragma omp parallel for default(none) shared(x,y,z,n)
     for (size_t k = 0; k < n; ++k)
     {
         x[k] = y[k] / z[k];
@@ -26,7 +27,7 @@ void vdaxpy(std::vector<double> & x, std::vector<double> const& y,
 {
     assert( x.size()==y.size() && y.size()==z.size() );
     size_t n = x.size();
-
+	#pragma omp parallel for default(none) shared(x,y,z,n,alpha)
     for (size_t k = 0; k < n; ++k)
     {
         x[k] = y[k] + alpha * z[k];
@@ -41,6 +42,7 @@ double dscapr(std::vector<double> const& x, std::vector<double> const& y)
     size_t n = x.size();
 
     double    s = 0.0;
+    #pragma omp parallel for default(none) shared(x,y,n) reduction(+:s)
     for (size_t k = 0; k < n; ++k)
     {
         s += x[k] * y[k];

@@ -35,3 +35,8 @@ void MatrixMultiplicationParallel( std::vector<std::vector<double>> const &a,  s
                           
 // Function Polynomial evaluation with parallelization
 void PolynomialEvaluation(std::vector<double> const &a, std::vector<double> const &x, std::vector<double> &result);
+
+// PolynomialEvaluation1: parallized outer loop
+// PolynomialEvaluation2: parallized inner loop
+void PolynomialEvaluation1(std::vector<double> const &a, std::vector<double> const &x, std::vector<double> &result);
+void PolynomialEvaluation2(std::vector<double> const &a, std::vector<double> const &x, std::vector<double> &result);
