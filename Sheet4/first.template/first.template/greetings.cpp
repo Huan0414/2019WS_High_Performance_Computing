@@ -161,78 +161,53 @@ void par_scalar(double &innerProduct, vector<double> const &vec1, vector<double>
 }
 
 
-void MinMaxWithoutReduc(vector<double> const &x, MPI_Comm const icomm)
+void MinMaxWithoutReduc(vector<double> &localVec, MPI_Comm const icomm)
 {
 	int myrank, numprocs;
     MPI_Comm_rank(icomm, &myrank);                // my MPI-rank
     MPI_Comm_size(icomm, &numprocs);              // #MPI processes
 	vector<double> globalMinVec(numprocs,0.0), globalMaxVec(numprocs,0.0);
+	
+	MPI_Status stat;
+    stat.MPI_ERROR = 0;            // M U S T   be initialized!!
 
-
-// Scatter vectors to all the processors
-	int N = x.size();
-	int ScatterCount = max(N/numprocs,1);
-	vector<double> localVec(ScatterCount,0.0);	
-	MPI_Scatter(&x[0],ScatterCount,MPI_DOUBLE,&localVec[0],ScatterCount,MPI_DOUBLE,0,icomm);	
+// Each process find their min and max number (defined as a structure float,int)
+	struct { double val; int   rank; } localMin, localMax, globalMin, globalMax;     // def of local and global min max.
+	//auto localMinPointer = &( *min_element (localVec.begin(), localVec.end()) );	// Pointer to local Min
+	auto localMinPointer = min_element(localVec.begin(), localVec.end());	// Pointer to local Min
+	//int minIndex = localMinPointer - localVec.begin();
+	localMin.val = 	*localMinPointer;									// Local Min value
+	localMin.rank = myrank;
+	cout <<"Processor "<< myrank << " has localMin: " << localMin.val <<endl;
+	//auto localMaxPointer = &( *max_element (localVec.begin(), localVec.end()) );	// Pointer to local Max
+	auto localMaxPointer = max_element(localVec.begin(), localVec.end()) ;	// Pointer to local Max
+	//int maxIndex = localMaxPointer - localVec.begin();
+	localMax.val = *localMaxPointer;              						// local Max value
+	localMax.rank = myrank;
+	//cout <<"Processor "<< myrank << " has localMax: " << localMax.val <<endl;
 	
-// Each process find their min and max number
-	double localMin =  *min_element (localVec.begin(), localVec.end()); 
-	//cout <<"Processor "<< myrank << " has localMin" << localMin<<endl;
-	double localMax =  *max_element (localVec.begin(), localVec.end());
-	
-// Processor 0 gather all the result to a vector	
-	MPI_Gather(&localMin,1,MPI_DOUBLE,&globalMinVec[0],1,MPI_DOUBLE,0,icomm);
-	MPI_Gather(&localMax,1,MPI_DOUBLE,&globalMaxVec[0],1,MPI_DOUBLE,0,icomm);
-    
-// Processor 0 deal with elements left and find the global min, max number
-	double globalMin, globalMax;
-	if (0==myrank) {
-		int leftover = N - ScatterCount*numprocs;
-		globalMin =  *min_element (globalMinVec.begin(), globalMinVec.end());
-		globalMax =  *max_element (globalMaxVec.begin(), globalMaxVec.end());
-		
-		if(leftover>0)
-		{
-			double leftMin;
-			double leftMax;
-			
-			//leftMin = *min_element (x.begin()+N-leftover, x.end());
-			//leftMax = *max_element (x.begin()+N-leftover, x.end());
-			leftMin = *min_element (x.begin()+N-leftover, x.end());
-			leftMax = *max_element (x.begin()+N-leftover, x.end());
-			
-			globalMin = min(globalMin,leftMin);
-			globalMax = max(globalMax,leftMax);
-		}
-		cout << "The max number in the vector is: " << globalMax << endl;
-		cout << "The min number in the vector is: " << globalMin << endl;
-		}
-		
-	MPI_Bcast(&globalMax,1,MPI_DOUBLE,0,icomm);
-	MPI_Bcast(&globalMin,1,MPI_DOUBLE,0,icomm);
-	//cout <<"In Processor "<< myrank << " the min number is: " << globalMin << endl;
-	
-	for(int i = 0; i < ScatterCount;i++){
-		if(localVec[i]==globalMin){localVec[i]=globalMax;}
-		else if(localVec[i]==globalMax){localVec[i]=globalMin;}
+	// Global reduction of Min and Max
+	MPI_Allreduce(&localMin, &globalMin, 1, MPI_DOUBLE_INT, MPI_MINLOC, icomm); // Reduction to find global minimum 
+	MPI_Allreduce(&localMax, &globalMax, 1, MPI_DOUBLE_INT, MPI_MAXLOC, icomm); // Reduction to find global maximum
+	MPI_Barrier(icomm);
+	if(myrank==0){
+		cout<< "Global Min, MinProcess: " << globalMin.val << ", " << globalMin.rank << endl;
+		cout<< "Global Max, MaxProcess: " << globalMax.val << ", " << globalMax.rank << endl;
 	}
 	
-	vector<double> NewX(N,0.0);
-	MPI_Gather(&localVec[0],ScatterCount,MPI_DOUBLE,&NewX[0],ScatterCount,MPI_DOUBLE,0,icomm);
+	MPI_Barrier(icomm);
+	if(myrank == 0) cout << "Before permutation" << endl;
+	PrintVectorsInOrder(localVec,icomm);
 	
-	if(0==myrank){
-		int leftover = N - ScatterCount*numprocs;
-		if(leftover>0) {
-			for(int i = 0; i < leftover;i++){
-				int newIndex = numprocs*ScatterCount+i;
-				NewX[newIndex] =  x[newIndex];
-				if(NewX[newIndex]==globalMin) {NewX[newIndex]=globalMax;}
-				else if(NewX[newIndex]==globalMax) {NewX[newIndex]=globalMin;}
-		}
-		}
-		cout<<"Final x is: "<<endl; for(int i = 0; i < N; i++) {cout<<" "<<NewX[i];}
-		cout << endl;
-	}
+	MPI_Barrier(icomm);
+	
+	if(myrank==globalMax.rank)	MPI_Sendrecv(&(*localMaxPointer),1,MPI_DOUBLE,globalMin.rank,123,&(*localMaxPointer),1,MPI_DOUBLE,globalMin.rank,123,icomm,&stat);
+	else if(myrank==globalMin.rank)	MPI_Sendrecv(&(*localMinPointer),1,MPI_DOUBLE,globalMax.rank,123,&(*localMinPointer),1,MPI_DOUBLE,globalMax.rank,123,icomm,&stat);
+	
+	
+	MPI_Barrier(icomm);
+	if(myrank == 0) cout << "After permutation" << endl;
+	PrintVectorsInOrder(localVec,icomm);
 		
 }
 
