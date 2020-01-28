@@ -35,6 +35,7 @@ void vdaxpy(std::vector<double> &x, std::vector<double> const &y,
  *
  */
 double dscapr(std::vector<double> const &x, std::vector<double> const &y);
+int dscaprInt(std::vector<int> const& x, std::vector<int> const& y);
 
 
 inline
@@ -52,6 +53,8 @@ double L2_scapr(std::vector<double> const &x, std::vector<double> const &y)
 */
 double par_scalar(std::vector<double> const &x, std::vector<double> const &y,
                    MPI_Comm const& icomm=MPI_COMM_WORLD);
+int par_scalarInt(std::vector<int> const &x, std::vector<int> const &y,
+					  MPI_Comm const& icomm);
 
 
 

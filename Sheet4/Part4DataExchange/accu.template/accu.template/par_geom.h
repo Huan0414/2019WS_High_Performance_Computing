@@ -47,6 +47,7 @@ class ParMesh: public Mesh
 	   explicit ParMesh(std::string const &sname, MPI_Comm const& icomm=MPI_COMM_WORLD);
 
        void VecAccu(std::vector<double> &w) const;
+       void VecAccuInt(std::vector<int> &w) const;
 
        /** 	Inner product
 	    * @param[in] x	vector
@@ -55,6 +56,8 @@ class ParMesh: public Mesh
        */
        double dscapr(std::vector<double> const &x, std::vector<double> const &y) const
        {return par_scalar(x, y, _icomm);}
+       double dscaprInt(std::vector<int> const &x, std::vector<int> const &y) const
+       {return par_scalarInt(x, y, _icomm);}
 
     private:
         /**
@@ -116,6 +119,7 @@ class ParMesh: public Mesh
        std::vector<int> _valence;                 //!< valence of local vertices, i.e. number of subdomains they belong to
        //  MPI_Alltoallv needs:
        mutable std::vector<double> _sendbuf;      //!< send buffer  a n d  receiving buffer (MPI_IN_PLACE)
+       mutable std::vector<int> _sendbufint;      //!< send buffer  a n d  receiving buffer (MPI_IN_PLACE)
        std::vector<int>    _sendcounts;           //!< number of data to send to each MPI rank (the same as for recv)
        std::vector<int>    _sdispls;              //!< offset of data to send to each MPI rank wrt. _senbuffer (the same as for recv)
     //

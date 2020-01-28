@@ -359,7 +359,7 @@ void ParMesh::Generate_VectorAdd()
     cout << " Check of data add (InPlace) successful!\n";
     
     vector<double> x(Nnodes(),-1.0);
-    VecAccu(x);
+    //VecAccu(x);
     cout << " VecAccu (InPlace) successful!\n";
 
     
@@ -508,59 +508,79 @@ bool ParMesh::CheckInterfaceAdd() const
 
 void ParMesh::VecAccu(std::vector<double> &w) const
 {
+	//cout << "Raw w" << endl; 
+	//for(size_t ls = 0; ls<w.size(); ++ls) cout << w[ls] << " ";
+    //cout << endl;
+    
     for(size_t ls = 0; ls<_sendbuf.size(); ++ls)
     {
         _sendbuf[ls] = w[_buf2loc.at(ls)];
     }
+    
+    //cout << "Sendbuf before alltoallv" << endl; 
+    //for(size_t ls = 0; ls<_sendbuf.size(); ++ls) cout << _sendbuf[ls] << ", ";
+    //cout << endl;
+	//DebugVector(_sendbuf,"_sendbuf",_icomm);
+    fflush(stdout);
+    
     int ierr = MPI_Alltoallv(MPI_IN_PLACE, _sendcounts.data(), _sdispls.data(), MPI_DOUBLE,
                           _sendbuf.data(), _sendcounts.data(), _sdispls.data(), MPI_DOUBLE, _icomm);
     assert(ierr==0);
+    
+    //cout << "Sendbuf after alltoallv" << endl; 
     //DebugVector(_sendbuf,"_sendbuf",_icomm);
+    
+    //cout << "W size: " << w.size() << endl;
+    
+    //for(size_t ls = 0; ls<w.size(); ++ls) cout << w[ls] << ", ";
+    //cout << endl;
+    //fflush(stdout); 	
+    
+    //cout << "Sendbuf after alltoallv" << endl; 
+    //for(size_t ls = 0; ls<_sendbuf.size(); ++ls) cout << _sendbuf[ls] << ",, ";
 
+	//DebugVector(_sendbuf,"_sendbuf",_icomm);
+    fflush(stdout);
+    
     for(size_t lk = 0; lk<_loc_itf.size(); ++lk) w[_loc_itf.at(lk)] = 0.0;   // only for interface nodes
+    //for(size_t lk = 0; lk<_loc_itf.size(); ++lk) cout << "lk" << lk;
+    cout << endl;
+    
     for(size_t ls = 0; ls<_sendbuf.size(); ++ls)
     {
         w[_buf2loc.at(ls)] += _sendbuf[ls];
     }
-
+    
+    //cout << "Accumulated w" << endl;
+    //for(size_t ls = 0; ls<w.size(); ++ls) cout << w[ls] << " ";
+    //cout << endl;
     return;
 }
 
+void ParMesh::VecAccuInt(std::vector<int> &w) const
+{   
+	_sendbufint.resize(_sendbuf.size());
+	
+    for(size_t ls = 0; ls<_sendbufint.size(); ++ls)
+    {
+        _sendbufint[ls] = w[_buf2loc.at(ls)];
+    }
 
+    fflush(stdout);
+    
+    int ierr = MPI_Alltoallv(MPI_IN_PLACE, _sendcounts.data(), _sdispls.data(), MPI_INT,
+                          _sendbufint.data(), _sendcounts.data(), _sdispls.data(), MPI_INT, _icomm);
+    assert(ierr==0);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	//DebugVector(_sendbuf,"_sendbuf",_icomm);
+    fflush(stdout);
+    
+    for(size_t lk = 0; lk<_loc_itf.size(); ++lk) w[_loc_itf.at(lk)] = 0;   // only for interface nodes
+    cout << endl;
+    
+    for(size_t ls = 0; ls<_sendbufint.size(); ++ls)
+    {
+        w[_buf2loc.at(ls)] += _sendbufint[ls];
+    }
+    return;
+}

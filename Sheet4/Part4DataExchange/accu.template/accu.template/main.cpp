@@ -42,21 +42,43 @@ int main(int argc, char **argv )
     //if ( check_rank == myrank ) mesh.DebugEdgeBased();
     
 // ---- allocate local vectors and check skalar product and vector accumulation
-    vector<double> xl(mesh.Nnodes(), -1.0);
-    mesh.SetValues(xl, [](double x, double y) -> double {return x * x * std::sin(2.5 * M_PI * y);} );
+    vector<double> xl(mesh.Nnodes(), 1.0);
+    vector<int> xlInt(mesh.Nnodes(), 1);
+    
+    //mesh.SetValues(xl, [](double x, double y) -> double {return x * x * std::sin(2.5 * M_PI * y);} );
+    
+    //if(myrank == check_rank) cout << "Nnodes: " << xl.size() << endl;
+    
+    //cout << "MyRank: " << myrank << ", Nnodes: " << xl.size() << endl;
     
     //if (check_rank==myrank) mesh.Visualize(xl);
     
-    for (size_t k=0; k<xl.size(); ++k)
-    {
-        xl[k] = 1.0;
-    }
-    double ss = mesh.dscapr(xl,xl);
-    cout << myrank << " : scalar : " << ss << endl;
+    //for (size_t k=0; k<xl.size(); ++k)
+    //{
+    //    xl[k] = 1.0;
+    //}
     
-    mesh.VecAccu(xl);
+    //if (check_rank==myrank) mesh.Visualize(xl);
     
-    if (check_rank==myrank) mesh.Visualize(xl);
+    //double ss = mesh.dscapr(xl,xl);
+	//cout << myrank << " : scalar : " << ss << endl;
+    int ssInt = mesh.dscaprInt(xlInt,xlInt);
+    cout << myrank << " : scalar : " << ssInt << endl;
+    
+    
+    //mesh.VecAccu(xl);
+    mesh.VecAccuInt(xlInt);
+    
+    ssInt = mesh.dscaprInt(xlInt,xlInt);
+    cout << myrank << " : scalar :: " << ssInt << endl;
+    
+    //ss = mesh.dscapr(xl,xl);
+    //cout << myrank << " : scalar :: " << ss << endl;
+    
+    //if (check_rank==myrank) mesh.Visualize(xl);
+    
+    //cout << "Coordinates:" << mesh.GetCoords() << endl;
+    //cout << "Size of mesh: " << (int)mesh.GetCoords().size() / 2 << endl;
 
     MPI_Finalize();
     return 0;

@@ -12,7 +12,7 @@ void vddiv(vector<double> & x, vector<double> const& y,
     assert( x.size()==y.size() && y.size()==z.size() );
     size_t n = x.size();
 
-#pragma omp parallel for
+	#pragma omp parallel for
     for (size_t k = 0; k < n; ++k)
     {
         x[k] = y[k] / z[k];
@@ -28,7 +28,7 @@ void vdaxpy(std::vector<double> & x, std::vector<double> const& y,
     assert( x.size()==y.size() && y.size()==z.size() );
     size_t n = x.size();
 
-#pragma omp parallel for
+	#pragma omp parallel for
     for (size_t k = 0; k < n; ++k)
     {
         x[k] = y[k] + alpha * z[k];
@@ -43,6 +43,23 @@ double dscapr(std::vector<double> const& x, std::vector<double> const& y)
     size_t n = x.size();
 
     double    s = 0.0;
+//#pragma omp parallel for reduction(+:s)
+    for (size_t k = 0; k < n; ++k)
+    {
+        s += x[k] * y[k];
+    }
+
+    return s;
+}
+
+//******************************************************************************
+
+int dscaprInt(std::vector<int> const& x, std::vector<int> const& y)
+{
+    assert( x.size()==y.size());
+    size_t n = x.size();
+
+    int    s = 0;
 //#pragma omp parallel for reduction(+:s)
     for (size_t k = 0; k < n; ++k)
     {
@@ -92,6 +109,16 @@ double par_scalar(vector<double> const &x, vector<double> const &y, MPI_Comm con
   const double s = dscapr(x,y);
         double sg;
   MPI_Allreduce(&s,&sg,1,MPI_DOUBLE,MPI_SUM,icomm);
+
+  return(sg);
+}
+
+//******************************************************************************
+int par_scalarInt(vector<int> const &x, vector<int> const &y, MPI_Comm const& icomm)
+{
+  const int s = dscaprInt(x,y);
+        int sg;
+  MPI_Allreduce(&s,&sg,1,MPI_INT,MPI_SUM,icomm);
 
   return(sg);
 }
