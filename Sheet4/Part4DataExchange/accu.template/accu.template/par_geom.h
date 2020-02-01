@@ -48,6 +48,7 @@ class ParMesh: public Mesh
 
        void VecAccu(std::vector<double> &w) const;
        void VecAccuInt(std::vector<int> &w) const;
+       void VecAverage(std::vector<double> &w) const;
 
        /** 	Inner product
 	    * @param[in] x	vector
@@ -58,6 +59,11 @@ class ParMesh: public Mesh
        {return par_scalar(x, y, _icomm);}
        double dscaprInt(std::vector<int> const &x, std::vector<int> const &y) const
        {return par_scalarInt(x, y, _icomm);}
+       
+       /** 	Global Number of Nodes
+	    * @return 	    Global number of nodes
+       */
+       int GlobalNnodes() const;
 
     private:
         /**

@@ -84,7 +84,7 @@ vector<int> ParMesh::ReadElementSubdomains(string const &dname)
     // Read some mesh constants
     int nelem;
     ifs >> nelem;
-    cout << nelem << endl;
+    cout <<  "NUMBER OF ELEMENTS: " <<  nelem << endl;
     assert( Nelems() == nelem);
 
     // Allocate memory
@@ -200,11 +200,12 @@ void ParMesh::Generate_VectorAdd()
 
 
     // ---- Determine for all global vertices the number of subdomains it belongs to
-    vector<int> global(gidx_max, 0);              // global scalar array for vertices
+    vector<int> global(gidx_max+1, 0);              // global scalar array for vertices
     for (auto const gidx : _v_l2g)  global[gidx] = 1;
     // https://www.mpi-forum.org/docs/mpi-2.2/mpi22-report/node109.htm
     ierr = MPI_Allreduce(MPI_IN_PLACE, global.data(), global.size(), MPI_INT, MPI_SUM, _icomm);
     if (0 == MyRank())  cout << global << endl;
+    if (MyRank() == 0) cout << "Global Size: " << global.size() << endl; 
     //MPI_Barrier(_icomm);
     //cout << _xc[2*_v_g2l.at(2)] << " , " << _xc[2*_v_g2l.at(2)+1] << endl;
     //MPI_Barrier(_icomm);
@@ -521,7 +522,7 @@ void ParMesh::VecAccu(std::vector<double> &w) const
     //for(size_t ls = 0; ls<_sendbuf.size(); ++ls) cout << _sendbuf[ls] << ", ";
     //cout << endl;
 	//DebugVector(_sendbuf,"_sendbuf",_icomm);
-    fflush(stdout);
+    //fflush(stdout);
     
     int ierr = MPI_Alltoallv(MPI_IN_PLACE, _sendcounts.data(), _sdispls.data(), MPI_DOUBLE,
                           _sendbuf.data(), _sendcounts.data(), _sdispls.data(), MPI_DOUBLE, _icomm);
@@ -540,7 +541,7 @@ void ParMesh::VecAccu(std::vector<double> &w) const
     //for(size_t ls = 0; ls<_sendbuf.size(); ++ls) cout << _sendbuf[ls] << ",, ";
 
 	//DebugVector(_sendbuf,"_sendbuf",_icomm);
-    fflush(stdout);
+    //fflush(stdout);
     
     for(size_t lk = 0; lk<_loc_itf.size(); ++lk) w[_loc_itf.at(lk)] = 0.0;   // only for interface nodes
     //for(size_t lk = 0; lk<_loc_itf.size(); ++lk) cout << "lk" << lk;
@@ -566,15 +567,10 @@ void ParMesh::VecAccuInt(std::vector<int> &w) const
         _sendbufint[ls] = w[_buf2loc.at(ls)];
     }
 
-    fflush(stdout);
-    
     int ierr = MPI_Alltoallv(MPI_IN_PLACE, _sendcounts.data(), _sdispls.data(), MPI_INT,
                           _sendbufint.data(), _sendcounts.data(), _sdispls.data(), MPI_INT, _icomm);
     assert(ierr==0);
-
-	//DebugVector(_sendbuf,"_sendbuf",_icomm);
-    fflush(stdout);
-    
+   
     for(size_t lk = 0; lk<_loc_itf.size(); ++lk) w[_loc_itf.at(lk)] = 0;   // only for interface nodes
     cout << endl;
     
@@ -582,5 +578,53 @@ void ParMesh::VecAccuInt(std::vector<int> &w) const
     {
         w[_buf2loc.at(ls)] += _sendbufint[ls];
     }
+    return;
+}
+
+int ParMesh::GlobalNnodes() const{
+	vector<double> xl(Nnodes(), 1.0);
+	double localSum = 0.0;
+	double globalSum = 0.0;
+	
+	VecAccu(xl);
+	
+	for(size_t i=0; i<xl.size(); ++i) localSum += 1/xl[i];
+	
+	//cout << MyRank() <<", localSum"<< localSum << endl;
+	
+	MPI_Barrier(_icomm);
+	MPI_Allreduce(&localSum,&globalSum,1,MPI_DOUBLE, MPI_SUM, _icomm);
+	
+	//if(MyRank() == 0) cout << "GlobalNonesNumber: " << globalSum << endl;
+	
+	return static_cast<int>(globalSum + 0.5);
+	//cout << "Addition Test: " << 1/3 + 1/3 + 1/3 << endl;
+}
+
+void ParMesh::VecAverage(std::vector<double> &w) const
+{
+	for(size_t ls = 0; ls<_sendbuf.size(); ++ls)
+    {
+        _sendbuf[ls] = w[_buf2loc.at(ls)];
+    }
+        
+    int ierr = MPI_Alltoallv(MPI_IN_PLACE, _sendcounts.data(), _sdispls.data(), MPI_DOUBLE,
+                          _sendbuf.data(), _sendcounts.data(), _sdispls.data(), MPI_DOUBLE, _icomm);
+    assert(ierr==0);
+     
+    for(size_t lk = 0; lk<_loc_itf.size(); ++lk) w[_loc_itf.at(lk)] = 0.0;   // only for interface nodes
+    
+	vector<double> w2(w.size(),0.0);
+	
+	for(size_t ls = 0; ls<_sendbuf.size(); ++ls)
+    {
+        w[_buf2loc.at(ls)] += _sendbuf[ls];
+        w2[_buf2loc.at(ls)] += 1.0;
+    }
+    
+    //cout << "MyRank: " << MyRank() << ", " << w2 << endl << "W: " <<  w << endl;
+    
+    for(size_t lk = 0; lk<_loc_itf.size(); ++lk) w[_loc_itf.at(lk)] /=  w2[_loc_itf.at(lk)];
+     
     return;
 }

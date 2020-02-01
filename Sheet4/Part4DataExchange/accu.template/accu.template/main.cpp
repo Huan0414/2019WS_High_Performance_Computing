@@ -24,12 +24,14 @@ int main(int argc, char **argv )
        int np;
        MPI_Comm_size(icomm, &np);
 
-       assert(4 == np);                  // example is only provided for 4 MPI processes
+       assert(6 == np);                  // example is only provided for 4 MPI processes
    }
 // #####################################################################
 // ---- Read the f.e. mesh and the mapping of elements to MPI processes
     //Mesh const mesh_c("square_4.txt");    //    Files square_4.m and square_4_sd.txt  are needed
-    ParMesh const mesh("square",icomm);
+    //ParMesh const mesh("square",icomm);
+    //Mesh const mesh_c("Rectangle_6.txt");    //    Files Rectangle_6.m and Rectangle_6_sd.txt  are needed
+    ParMesh const mesh("Rectangle",icomm);
     
     int const numprocs = mesh.NumProcs();
     int const myrank   = mesh.MyRank();
@@ -42,14 +44,13 @@ int main(int argc, char **argv )
     //if ( check_rank == myrank ) mesh.DebugEdgeBased();
     
 // ---- allocate local vectors and check skalar product and vector accumulation
-    vector<double> xl(mesh.Nnodes(), 1.0);
-    vector<int> xlInt(mesh.Nnodes(), 1);
-    
+    //vector<double> xl(mesh.Nnodes(), 1.0);
+    vector<double> xl(mesh.Nnodes(), myrank + 1.0);
+    vector<double> xl2(mesh.Nnodes(), myrank + 2.0); 
+    vector<int> xlInt(mesh.Nnodes(), myrank + 1);		 
+       
     //mesh.SetValues(xl, [](double x, double y) -> double {return x * x * std::sin(2.5 * M_PI * y);} );
-    
-    //if(myrank == check_rank) cout << "Nnodes: " << xl.size() << endl;
-    
-    //cout << "MyRank: " << myrank << ", Nnodes: " << xl.size() << endl;
+    //mesh.SetValues( xl, [](double x, double y) -> double {return x + y;} );
     
     //if (check_rank==myrank) mesh.Visualize(xl);
     
@@ -58,28 +59,58 @@ int main(int argc, char **argv )
     //    xl[k] = 1.0;
     //}
     
-    //if (check_rank==myrank) mesh.Visualize(xl);
-    
-    //double ss = mesh.dscapr(xl,xl);
-	//cout << myrank << " : scalar : " << ss << endl;
-    int ssInt = mesh.dscaprInt(xlInt,xlInt);
-    cout << myrank << " : scalar : " << ssInt << endl;
-    
-    
-    //mesh.VecAccu(xl);
-    mesh.VecAccuInt(xlInt);
-    
-    ssInt = mesh.dscaprInt(xlInt,xlInt);
-    cout << myrank << " : scalar :: " << ssInt << endl;
-    
-    //ss = mesh.dscapr(xl,xl);
-    //cout << myrank << " : scalar :: " << ss << endl;
-    
-    //if (check_rank==myrank) mesh.Visualize(xl);
+//// ####################### Sheet4Ex9 check VecAccu() and GetCoords() ###     
+        
+    if(myrank == check_rank) {
+	cout << "Sheet4Ex9 check VecAccu() and GetCoords()" << endl;
+    cout << "Nnodes: " << xl.size() << endl;
+    }			
+    cout << "MyRank: " << myrank << ", Nnodes: " << xl.size() << endl;
     
     //cout << "Coordinates:" << mesh.GetCoords() << endl;
-    //cout << "Size of mesh: " << (int)mesh.GetCoords().size() / 2 << endl;
+    //cout << "Size of mesh: " << (int)mesh.GetCoords().size() / 2 << endl;		// we don't understand why need coords
+       
+    //if (check_rank==myrank) mesh.Visualize(xl);					// check before VecAccu()
+    
+    //mesh.VecAccu(xl);
+ 
+    //if (1==myrank) mesh.Visualize(xl);					// check after VecAccu()
+																	// 2 on the intefaces, 4 on the center
+    
+    //double ss = mesh.dscapr(xl,xl);
+	//cout << myrank << " : scalar : " << ss << endl;				//  should be 1108
+																	////  overall 660 interior nodes, 48 interfaces nodes, 1 center node
 
+//// ####################### Sheet4Ex10 VecAccuInt() with int ##############    
+    
+    //MPI_Barrier(icomm);
+    
+    //mesh.VecAccuInt(xlInt);    
+	
+	//int ssInt = mesh.dscaprInt(xlInt,xlInt);
+    //cout << myrank << " : scalar : " << ssInt << endl;
+
+    //if (check_rank==myrank) mesh.Visualize(xl);
+    
+    
+//// ####################### Sheet4Ex11 GlobalNnodes() ###################   
+    
+    //MPI_Barrier(icomm);			
+    
+    //int GlobalNumberNodes = mesh.GlobalNnodes();					// MPI_Allreduce used
+    //if(myrank == check_rank) 
+    //{cout << "GlobalNodesNumber: " << GlobalNumberNodes << endl;} // should be 709, (try with 3 domains)													
+	
+//// ####################### Sheet4Ex12 VecAverage() ################## 
+    
+    //MPI_Barrier(icomm);
+    
+    mesh.VecAverage(xl);   
+    if (check_rank==myrank) mesh.Visualize(xl);						// all be 1.0
+    
+    //mesh.VecAverage(xl2);  
+    //if (check_rank==myrank) mesh.Visualize(xl2);					// all be 2.0
+    
     MPI_Finalize();
     return 0;
 }
