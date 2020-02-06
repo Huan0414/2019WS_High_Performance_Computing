@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# SGE submission options
+
+#$ -q mpi                     # Select the queue
+#$ -l h_vmem=2G               # Request Max. Virt. Mem. =2G per core/slot
+#$ -cwd                       # Change to current working directory
+#$ -V                         # Export environment variables into script
+
+#$ -N testmpi                 # A name for the job
+
+#$ -o testmpi.out             # SGE-Output File
+#$ -e testmpi.err             # SGE-Error File
+#$ -pe mpi 4                 # Select the parallel environment with 24 Processes/slots
+
+
+
+mpiexec ./main_jacobi.GCC_

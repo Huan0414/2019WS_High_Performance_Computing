@@ -1,0 +1,26 @@
+#%Module1.0
+proc ModulesHelp { } {
+global dotversion
+puts stderr "Copyright (C) 2009-2019 Intel Corporation. All rights reserved."
+}
+
+#
+# Change value for the variable below if the product install directory is changed.
+#
+set PRODUCT_INSTALL_DIR "/home/ghaase/Lectures/Math2CPP/Codes/par/mgrid"
+
+
+set BIN_DIR bin32
+
+if {"Darwin" == [uname sysname]} {
+    set BIN_DIR
+} elseif {"x86_64" == [uname machine]} {
+    set BIN_DIR bin64
+} else {
+    set BIN_DIR bin32
+}
+
+module-whatis "Intel(R) VTune(TM) Amplifier 2019 (build 602217)"
+prepend-path PATH "$PRODUCT_INSTALL_DIR/$BIN_DIR"
+
+setenv VTUNE_AMPLIFIER_2019_DIR $PRODUCT_INSTALL_DIR

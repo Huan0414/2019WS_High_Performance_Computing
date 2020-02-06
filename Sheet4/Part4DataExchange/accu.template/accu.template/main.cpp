@@ -46,7 +46,8 @@ int main(int argc, char **argv )
 // ---- allocate local vectors and check skalar product and vector accumulation
     //vector<double> xl(mesh.Nnodes(), 1.0);
     vector<double> xl(mesh.Nnodes(), myrank + 1.0);
-    vector<double> xl2(mesh.Nnodes(), myrank + 2.0); 
+    vector<double> xl2(mesh.Nnodes(), myrank + 2.0);
+    vector<double> xl3(mesh.Nnodes(), myrank + 1.0);
     vector<int> xlInt(mesh.Nnodes(), myrank + 1);		 
        
     //mesh.SetValues(xl, [](double x, double y) -> double {return x * x * std::sin(2.5 * M_PI * y);} );
@@ -59,57 +60,63 @@ int main(int argc, char **argv )
     //    xl[k] = 1.0;
     //}
     
-//// ####################### Sheet4Ex9 check VecAccu() and GetCoords() ###     
+//// ####################################################### Sheet4Ex9 check VecAccu() and GetCoords() ###     
         
     if(myrank == check_rank) {
-	cout << "Sheet4Ex9 check VecAccu() and GetCoords()" << endl;
+	cout << "#######################################################Sheet4Ex9 check VecAccu() and GetCoords()" << endl;
     cout << "Nnodes: " << xl.size() << endl;
     }			
     cout << "MyRank: " << myrank << ", Nnodes: " << xl.size() << endl;
     
     //cout << "Coordinates:" << mesh.GetCoords() << endl;
-    //cout << "Size of mesh: " << (int)mesh.GetCoords().size() / 2 << endl;		// we don't understand why need coords
+    //cout << "Size of mesh: " << (int)mesh.GetCoords().size() / 2 << endl;	
        
-    //if (check_rank==myrank) mesh.Visualize(xl);					// check before VecAccu()
+    if (check_rank==myrank) mesh.Visualize(xl);					// check before VecAccu()
     
-    //mesh.VecAccu(xl);
+    mesh.VecAccu(xl);
  
-    //if (1==myrank) mesh.Visualize(xl);					// check after VecAccu()
-																	// 2 on the intefaces, 4 on the center
+    if (check_rank==myrank) mesh.Visualize(xl);					// check after VecAccu()
+																	// 2 on the intefaces, 4 on the center (for Square with 1s vector)
     
     //double ss = mesh.dscapr(xl,xl);
-	//cout << myrank << " : scalar : " << ss << endl;				//  should be 1108
-																	////  overall 660 interior nodes, 48 interfaces nodes, 1 center node
+	//cout << myrank << " : scalar : " << ss << endl;				//  should be 1108 (for Square with 1s vector)
+																	////  overall 660 interior nodes, 48 interfaces nodes, 1center node (for Square with 1s vector)
 
 //// ####################### Sheet4Ex10 VecAccuInt() with int ##############    
     
-    //MPI_Barrier(icomm);
+    MPI_Barrier(icomm);
     
-    //mesh.VecAccuInt(xlInt);    
+    if(myrank == check_rank) cout << "####################################################### Sheet4Ex10 VecAccuInt() with int" << endl;	
+    
+    mesh.VecAccuInt(xlInt);    
 	
-	//int ssInt = mesh.dscaprInt(xlInt,xlInt);
-    //cout << myrank << " : scalar : " << ssInt << endl;
+	int ssInt = mesh.dscaprInt(xlInt,xlInt);
+    if(myrank == check_rank) cout << myrank << " : scalarProductInteger : " << ssInt << endl;
 
-    //if (check_rank==myrank) mesh.Visualize(xl);
+    if (check_rank==myrank) mesh.Visualize(xl);
+    if (check_rank==myrank) cout << endl;
+        
+//// ####################### Sheet4Ex11 GlobalNnodes() ###################  
+
+	MPI_Barrier(icomm);
+	if(myrank == check_rank) cout << "####################################################### Sheet4Ex11 GlobalNnodes()" << endl;
+    			
     
-    
-//// ####################### Sheet4Ex11 GlobalNnodes() ###################   
-    
-    //MPI_Barrier(icomm);			
-    
-    //int GlobalNumberNodes = mesh.GlobalNnodes();					// MPI_Allreduce used
-    //if(myrank == check_rank) 
-    //{cout << "GlobalNodesNumber: " << GlobalNumberNodes << endl;} // should be 709, (try with 3 domains)													
+    int GlobalNumberNodes = mesh.GlobalNnodes();					// MPI_Allreduce used
+    if(myrank == check_rank) 
+    {cout << "GlobalNodesNumber: " << GlobalNumberNodes << endl << endl;} // It is 709, (for Square)											
 	
 //// ####################### Sheet4Ex12 VecAverage() ################## 
     
-    //MPI_Barrier(icomm);
+    MPI_Barrier(icomm);
+    if(myrank == check_rank) cout << "####################################################### Sheet4Ex12 VecAverage()" << endl;	
     
-    mesh.VecAverage(xl);   
-    if (check_rank==myrank) mesh.Visualize(xl);						// all be 1.0
+    mesh.VecAverage(xl3);
+      
+    if (check_rank==myrank) mesh.Visualize(xl3);						
     
     //mesh.VecAverage(xl2);  
-    //if (check_rank==myrank) mesh.Visualize(xl2);					// all be 2.0
+    //if (check_rank==myrank) mesh.Visualize(xl2);					
     
     MPI_Finalize();
     return 0;

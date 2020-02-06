@@ -1,0 +1,9 @@
+# https://www.open-mpi.org/doc/v3.1/man1/mpirun.1.php
+#
+# mpirun -display-map -hostfile myhostfile ./main_jacobi.GCC_
+
+143.50.47.68
+143.50.47.68
+143.50.47.68
+143.50.47.68
+

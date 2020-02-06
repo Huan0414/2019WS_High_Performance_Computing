@@ -18,6 +18,8 @@ void DebugVector(vector<double> const &xin, MPI_Comm const &icomm )
     MPI_Comm_rank(icomm, &myrank);                // my MPI-rank
     MPI_Comm_size(icomm, &numprocs);
     int ProcessCalled=-1;
+    vector<double> data(xin.size());
+    int ierr;
     
     if (0==myrank) {
         while((ProcessCalled < 0) || (ProcessCalled >= numprocs))
@@ -28,64 +30,103 @@ void DebugVector(vector<double> const &xin, MPI_Comm const &icomm )
     }
     //Broadcast process number
     MPI_Bcast(&ProcessCalled, 1, MPI_INT, 0, icomm);
-	// Print vector from called process
-	if(myrank == ProcessCalled){
-		cout << "Vector from process: " << myrank << " -- "; 
-		for(int i=0; i < (int) xin.size(); ++i){	
-			cout << xin[i] << " ";}
-		cout << endl;
-		cout << "-----------------------------------" << endl;
+    
+    if(myrank == 0){
+		if(ProcessCalled == 0){
+			cout << "Vector from process: " << ProcessCalled << " -- ";
+			for(int i=0; i < (int) xin.size(); ++i)	cout << xin[i] << " ";
+			cout << endl;	
+		}
+		else{
+			MPI_Status stat;
+		    stat.MPI_ERROR = 0;            // M U S T   be initialized!!
+			ierr = MPI_Recv(data.data(), xin.size(), MPI_DOUBLE, ProcessCalled, MPI_ANY_TAG, icomm, &stat); // Receive vector from ProcessCalled
+			assert(0==ierr);
+			cout << "Vector from process: " << ProcessCalled << " -- "; 
+			for(int i=0; i < (int) data.size(); ++i)	cout << data[i] << " ";
+			cout << endl;
+		}
 	}
-	fflush(stdout);
-	MPI_Barrier(icomm);
-	
+	else if(myrank == ProcessCalled){
+		int dest = 0;
+        ierr = MPI_Send(xin.data(), xin.size(), MPI_DOUBLE, dest, myrank, icomm); 
+        assert(0==ierr);
+	}
+
 	// Print vectors in order
 	//for(int i=0; i<numprocs; ++i ){
 		//MPI_Barrier(icomm);
-		//fflush(stdout);
+		////fflush(stdout);
 		//if(myrank==i){
 			//cout << "Vector from process: " << myrank << " -- "; 
 			//for(int j=0; j < (int) xin.size(); ++j){	
 			//cout << xin[j] << " ";	}
-			//cout << endl;
+			//cout << endl;	
+			//fflush(stdout);
 		//}
-		
+		//MPI_Barrier(icomm);
 	//}
 	//MPI_Barrier(icomm);
     return;  
 }
 
 void PrintVectorsInOrder(vector<double> const &xin, MPI_Comm const &icomm ){
-	int myrank, numprocs; 
+	int myrank, numprocs, localmaxSizeXin, globalMax;
+	globalMax = 0;
     MPI_Comm_rank(icomm, &myrank);                // my MPI-rank
     MPI_Comm_size(icomm, &numprocs);
-	vector<double> data(xin.size());
+    int RootRank = 0;
+    
+    // Max length of vectors xin
+    localmaxSizeXin = static_cast<int>(xin.size());
+    
+    MPI_Reduce(&localmaxSizeXin, &globalMax, 1, MPI_INT, MPI_MAX, RootRank, icomm); // Reduction to find global maximum
+    
+    //cout << "rank: " << myrank << "localsizeXin: " << localmaxSizeXin << "-- globalMax: " << globalMax << endl;
+    
+	vector<double> data(globalMax,0);                                            // vector to save vector of other ranks in rank 0
 	int ierr;
+	int RecvLength;
+	
 	// prcessor 0 prints vector
 	if(0==myrank){
-	cout << "Vector from process: " << myrank << " -- "; 
-	for(int i=0; i < (int) xin.size(); ++i){	
-		cout << xin[i] << " ";}
-	cout << endl;
-	
-	// Other processors print their vectors
-	for (int i = 1; i < numprocs; ++i) 
-	{
+		vector<int> lengths(numprocs-1);
 		MPI_Status stat;
-        stat.MPI_ERROR = 0;            // M U S T   be initialized!!
-		ierr = MPI_Recv(&data[0], xin.size(), MPI_DOUBLE, i, MPI_ANY_TAG, icomm, &stat); // MPI_ANY_SOURCE to i to order
-		assert(0==ierr);
+		stat.MPI_ERROR = 0;            // M U S T   be initialized!!
+		cout << "Vector from process: " << myrank << " -- "; // Print vector from rank 0
+		for(int i=0; i < (int) xin.size(); ++i){	
+			cout << xin[i] << " ";}
+		cout << endl;
 		
-		cout << "Vector from process: " << i << " -- "; 
-		for(int j=0; j < (int) xin.size(); ++j){	
-			cout << data[j] << " ";}
-		cout << endl;				
-	   }
+		// Receive Lenghts from other ranks
+		//for (int i = 1; i < numprocs; ++i) 
+		//{
+	    //    ierr = MPI_Recv(&lengths[i-1], 1, MPI_INT, i, 12, icomm, &stat);  // Receive length
+		//	assert(0==ierr);				
+		//}
+		
+		// Other processors print their vectors
+		for (int i = 1; i < numprocs; ++i) 
+		{
+	        //ierr = MPI_Recv(&RecvLength, 1, MPI_INT, i, 12, icomm, &stat);  // Receive length
+			//assert(0==ierr);
+			ierr = MPI_Recv(data.data(), globalMax, MPI_DOUBLE, i, 123, icomm, &stat); // Receive vector
+			assert(0==ierr);
+			
+			MPI_Get_count(&stat, MPI_DOUBLE, &RecvLength);
+			
+			cout << "Vector from process: " << i << " -- "; 
+			for(int j=0; j < RecvLength; ++j) cout << data[j] << " ";
+			cout << endl;				
+		}
 	}
 	else
 	{
 		int dest = 0;
-        ierr = MPI_Send(&xin[0], xin.size(), MPI_DOUBLE, dest, myrank, icomm);
+		//int length = static_cast<int>(xin.size());
+		//ierr = MPI_Send(&length, 1, MPI_INT, dest, 12, icomm);  // send length
+        //assert(0==ierr);
+        ierr = MPI_Send(xin.data(), xin.size(), MPI_DOUBLE, dest, 123, icomm);  // send vector from rank != 0
         assert(0==ierr);
 	}	
 	return;
@@ -121,9 +162,9 @@ void par_scalar(double &innerProduct, vector<double> const &vec1, vector<double>
 	vector<double> localVec1(sentElements), localVec2(sentElements);	// Local vectors
 	
 	// Scatter of data among processors
-	MPI_Scatter(&vec1[0], sentElements, MPI_DOUBLE, &localVec1[0], \
+	MPI_Scatter(vec1.data(), sentElements, MPI_DOUBLE, localVec1.data(),\
 	sentElements, MPI_DOUBLE, 0, icomm);
-	MPI_Scatter(&vec2[0], sentElements, MPI_DOUBLE, &localVec2[0], \
+	MPI_Scatter(vec2.data(), sentElements, MPI_DOUBLE, localVec2.data(),\
 	sentElements, MPI_DOUBLE, 0, icomm);
 	//fflush(stdout);
 	MPI_Barrier(icomm);	
@@ -178,7 +219,7 @@ void MinMaxWithoutReduc(vector<double> &localVec, MPI_Comm const icomm)
 	//int minIndex = localMinPointer - localVec.begin();
 	localMin.val = 	*localMinPointer;									// Local Min value
 	localMin.rank = myrank;
-	cout <<"Processor "<< myrank << " has localMin: " << localMin.val <<endl;
+	//cout <<"Processor "<< myrank << " has localMin: " << localMin.val <<endl;
 	//auto localMaxPointer = &( *max_element (localVec.begin(), localVec.end()) );	// Pointer to local Max
 	auto localMaxPointer = max_element(localVec.begin(), localVec.end()) ;	// Pointer to local Max
 	//int maxIndex = localMaxPointer - localVec.begin();
@@ -199,11 +240,13 @@ void MinMaxWithoutReduc(vector<double> &localVec, MPI_Comm const icomm)
 	if(myrank == 0) cout << "Before permutation" << endl;
 	PrintVectorsInOrder(localVec,icomm);
 	
-	MPI_Barrier(icomm);
+	//MPI_Barrier(icomm);
 	
-	if(myrank==globalMax.rank)	MPI_Sendrecv(&(*localMaxPointer),1,MPI_DOUBLE,globalMin.rank,123,&(*localMaxPointer),1,MPI_DOUBLE,globalMin.rank,123,icomm,&stat);
-	else if(myrank==globalMin.rank)	MPI_Sendrecv(&(*localMinPointer),1,MPI_DOUBLE,globalMax.rank,123,&(*localMinPointer),1,MPI_DOUBLE,globalMax.rank,123,icomm,&stat);
+	//if(myrank==globalMax.rank)	MPI_Sendrecv(&(*localMaxPointer),1,MPI_DOUBLE,globalMin.rank,123,&(*localMaxPointer),1,MPI_DOUBLE,globalMin.rank,123,icomm,&stat);
+	//else if(myrank==globalMin.rank)	MPI_Sendrecv(&(*localMinPointer),1,MPI_DOUBLE,globalMax.rank,123,&(*localMinPointer),1,MPI_DOUBLE,globalMax.rank,123,icomm,&stat);
 	
+	if(myrank==globalMax.rank)	MPI_Sendrecv_replace(&(*localMaxPointer),1,MPI_DOUBLE,globalMin.rank,123,globalMin.rank,123,icomm,&stat);
+	else if(myrank==globalMin.rank)	MPI_Sendrecv_replace(&(*localMinPointer),1,MPI_DOUBLE,globalMax.rank,123,globalMax.rank,123,icomm,&stat);
 	
 	MPI_Barrier(icomm);
 	if(myrank == 0) cout << "After permutation" << endl;
@@ -229,7 +272,7 @@ void greetings(MPI_Comm const &icomm)
             stat.MPI_ERROR = 0;            // M U S T   be initialized!!
 
 		    ierr = MPI_Recv(chbuf, MPI_MAX_PROCESSOR_NAME, MPI_CHAR, \
-							i, MPI_ANY_TAG, icomm, &stat); // MPI_ANY_SOURCE to i to order
+							i, MPI_ANY_TAG, icomm, &stat); // MPI_S
             assert(0==ierr);
 
             cout << "   " << stat.MPI_SOURCE << " runs on " << chbuf;

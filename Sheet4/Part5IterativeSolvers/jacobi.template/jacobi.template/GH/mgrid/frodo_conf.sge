@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# SGE submission options
+# qinfo
+
+#$ -q mpi@f32,mpi@f33         # Select the queue
+#$ -l nodes=2,ppn=2
+#$ -cwd                       # Change to current working directory
+#$ -V                         # Export environment variables into script
+
+#$ -N testmpi                 # A name for the job
+
+#$ -o testmpi.out             # SGE-Output File
+#$ -e testmpi.err             # SGE-Error File
+#$ -pe mpi 4                 # Select the parallel environment with 24 Processes/slots
+
+
+mpiexec -display-map  ./main_jacobi.GCC_
